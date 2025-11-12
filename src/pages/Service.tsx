@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 import MindmapNode from '@/components/MindmapNode';
 import { mindmapData, START_NODE_ID } from '@/data/mindmap';
 import { PlayCircle } from 'lucide-react';
@@ -26,7 +25,7 @@ const ServicePage = () => {
   const currentNode = currentNodeId ? mindmapData[currentNodeId] : null;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+    <div className="flex flex-col items-center justify-center w-full h-full">
       {!serviceStarted ? (
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">Helpdesk Inteligente</h1>
@@ -41,9 +40,6 @@ const ServicePage = () => {
       ) : (
         currentNode && <MindmapNode node={currentNode} onSelectOption={handleSelectOption} onReset={handleReset} />
       )}
-      <div className="absolute bottom-0">
-        <MadeWithDyad />
-      </div>
     </div>
   );
 };
