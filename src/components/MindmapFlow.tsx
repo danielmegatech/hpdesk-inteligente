@@ -1,14 +1,15 @@
 import { MindmapNode } from '@/data/mindmap';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, PlusCircle, SkipForward } from 'lucide-react';
+import { ArrowRight, PlusCircle, SkipForward, ArrowLeft } from 'lucide-react';
 
 interface MindmapFlowProps {
   node: MindmapNode;
   onSelectOption: (nextNodeId: string | null) => void;
   onReset: () => void;
+  onBack: () => void;
 }
 
-const MindmapFlow = ({ node, onSelectOption, onReset }: MindmapFlowProps) => {
+const MindmapFlow = ({ node, onSelectOption, onReset, onBack }: MindmapFlowProps) => {
   const isEndNode = node.options.length === 0;
 
   return (
@@ -27,7 +28,11 @@ const MindmapFlow = ({ node, onSelectOption, onReset }: MindmapFlowProps) => {
 
       {/* Options */}
       {isEndNode ? (
-        <div className="text-center animate-in fade-in slide-in-from-bottom-10">
+        <div className="text-center animate-in fade-in slide-in-from-bottom-10 flex gap-4">
+          <Button onClick={onBack} size="lg" variant="outline">
+            <ArrowLeft className="mr-2 h-5 w-5" />
+            Voltar
+          </Button>
           <Button onClick={onReset} size="lg" variant="secondary">
             Iniciar Novo Atendimento
           </Button>
@@ -53,6 +58,9 @@ const MindmapFlow = ({ node, onSelectOption, onReset }: MindmapFlowProps) => {
       
       {!isEndNode && (
         <div className="flex justify-center space-x-4 mt-8 border-t border-slate-700 w-full max-w-md pt-6">
+            <Button variant="ghost" size="sm" onClick={onBack}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+            </Button>
             <Button variant="outline" size="sm">
                 <SkipForward className="mr-2 h-4 w-4" /> Pular
             </Button>
