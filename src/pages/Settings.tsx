@@ -5,22 +5,34 @@ import { useTheme } from '@/components/ThemeProvider';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { useSettings } from '@/hooks/use-settings';
 
 const SettingsPage = () => {
   const { theme, setTheme } = useTheme();
+  const { settings, setSettings } = useSettings();
+
+  const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setSettings(prev => ({ ...prev, [id]: id === 'breakMinutes' ? parseInt(value) : value }));
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">Ajustes</h1>
-        <p className="text-muted-foreground">Personalize as configurações do aplicativo.</p>
-      </div>
+      <div className="text-center"><h1 className="text-3xl font-bold">Ajustes</h1><p className="text-muted-foreground">Personalize as configurações do aplicativo.</p></div>
       <Card>
         <CardHeader><CardTitle>Perfil</CardTitle><CardDescription>Atualize suas informações de perfil.</CardDescription></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2"><Label htmlFor="name">Nome</Label><Input id="name" defaultValue="Técnico Exemplo" /></div>
           <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" defaultValue="tecnico@helpdesk.app" /></div>
           <Button>Salvar Alterações</Button>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle>Horário de Trabalho</CardTitle><CardDescription>Defina seu horário para notificações inteligentes.</CardDescription></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2"><Label htmlFor="workStartTime">Início do Turno</Label><Input id="workStartTime" type="time" value={settings.workStartTime} onChange={handleSettingsChange} /></div>
+          <div className="space-y-2"><Label htmlFor="workEndTime">Fim do Turno</Label><Input id="workEndTime" type="time" value={settings.workEndTime} onChange={handleSettingsChange} /></div>
+          <div className="space-y-2"><Label htmlFor="breakMinutes">Intervalo (minutos)</Label><Input id="breakMinutes" type="number" value={settings.breakMinutes} onChange={handleSettingsChange} /></div>
         </CardContent>
       </Card>
       <Card>
