@@ -1,24 +1,32 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import MindmapNode from '@/components/MindmapNode';
-import { mindmapData, START_NODE_ID } from '@/data/mindmap';
+import MindmapFlow from '@/components/MindmapFlow';
+import MindmapHistory from '@/components/MindmapHistory';
+import { mindmapData, START_NODE_ID, MindmapNode } from '@/data/mindmap';
 import { PlayCircle } from 'lucide-react';
 
 const ServicePage = () => {
   const [serviceStarted, setServiceStarted] = useState(false);
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(START_NODE_ID);
+  const [history, setHistory] = useState<MindmapNode[]>([]);
 
   const handleStartService = () => {
     setServiceStarted(true);
     setCurrentNodeId(START_NODE_ID);
+    setHistory([]);
   };
   
   const handleReset = () => {
     setServiceStarted(false);
     setCurrentNodeId(START_NODE_ID);
+    setHistory([]);
   }
 
   const handleSelectOption = (nextNodeId: string | null) => {
+    if (currentNodeId) {
+      const lastNode = mindmapData[currentNodeId];
+      setHistory([...history, lastNode]);
+    }
     setCurrentNodeId(nextNodeId);
   };
 
@@ -38,7 +46,10 @@ const ServicePage = () => {
           </Button>
         </div>
       ) : (
-        currentNode && <MindmapNode node={currentNode} onSelectOption={handleSelectOption} onReset={handleReset} />
+        <>
+          <MindmapHistory history={history} />
+          {currentNode && <MindmapFlow node={currentNode} onSelectOption={handleSelectOption} onReset={handleReset} />}
+        </>
       )}
     </div>
   );
