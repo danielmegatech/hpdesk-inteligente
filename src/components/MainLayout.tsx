@@ -55,7 +55,7 @@ const MainLayout = () => {
   };
 
   useEffect(() => {
-    const checkWorkHoursAndTasks = () => {
+    const checkWorkHoursAndTasks = async () => { // Made async
       const now = new Date();
       const today = now.toDateString();
       const [startHour, startMinute] = settings.workStartTime.split(':').map(Number);
@@ -76,8 +76,8 @@ const MainLayout = () => {
         }
       }
 
-      // Task deadline notifications (using mock API)
-      const allTasks = apiGetTasks();
+      // Task deadline notifications (using Supabase API)
+      const allTasks = await apiGetTasks(); // Fetch tasks from Supabase
       allTasks.forEach(task => {
         if (task.deadline && task.status !== 'concluido' && task.status !== 'lixeira') {
           const diff = task.deadline.getTime() - now.getTime();
@@ -140,8 +140,8 @@ const MainLayout = () => {
           <DialogHeader><DialogTitle>Criar Nova Tarefa (via Assistente IA)</DialogTitle></DialogHeader>
           <TaskForm 
             task={initialTaskDataFromAI} 
-            onSave={(data) => {
-              apiAddTask(data);
+            onSave={async (data) => { // Made async
+              await apiAddTask(data); // Await the API call
               toast.success(`Tarefa "${data.title}" criada com sucesso!`);
               setIsAddTaskOpenFromAI(false);
               setInitialTaskDataFromAI(undefined);
@@ -156,8 +156,8 @@ const MainLayout = () => {
           <DialogHeader><DialogTitle>Adicionar Novo Artigo (via Assistente IA)</DialogTitle></DialogHeader>
           <ArticleForm 
             article={initialArticleDataFromAI} 
-            onSave={(data) => {
-              apiAddArticle(data);
+            onSave={async (data) => { // Made async
+              await apiAddArticle(data); // Await the API call
               toast.success(`Artigo "${data.title}" adicionado à Base de Conhecimento!`);
               setIsAddKnowledgeOpenFromAI(false);
               setInitialArticleDataFromAI(undefined);

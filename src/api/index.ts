@@ -1,4 +1,22 @@
-import { AppNotification, apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiGetReportMetrics, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification, apiGetNotifications } from './mockApi'; // Adicionado apiGetNotifications aqui
+import { AppNotification, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiGetReportMetrics, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification, apiGetNotifications } from './mockApi';
+import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetTrashedTasks, apiRestoreTask, apiPermanentDeleteTask } from './supabaseTasks';
 
-export type { AppNotification }; // Re-exportar o tipo separadamente
-export { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiGetReportMetrics, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification, apiGetNotifications }; // Adicionado apiGetNotifications aqui
+export type { AppNotification };
+export { 
+  apiGetTasks, 
+  apiAddTask, 
+  apiUpdateTask, 
+  apiDeleteTask, 
+  apiGetTrashedTasks, 
+  apiRestoreTask, 
+  apiPermanentDeleteTask,
+  apiGetArticles, 
+  apiAddArticle, 
+  apiUpdateArticle, 
+  apiDeleteArticle, 
+  apiGetReportMetrics, 
+  apiAddNotification, 
+  apiMarkNotificationAsRead, 
+  apiDeleteNotification, 
+  apiGetNotifications 
+};
