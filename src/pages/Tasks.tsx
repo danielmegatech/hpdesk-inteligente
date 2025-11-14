@@ -19,6 +19,7 @@ import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import TaskForm from '@/components/TaskForm'; // Import TaskForm from its new location
 
 // --- TYPES AND SCHEMA ---
 const taskStatusSchema = z.enum(['novo', 'emAndamento', 'pendenteAutorizacaoEscalado', 'concluido', 'lixeira']);
@@ -65,21 +66,7 @@ const statusColorMap: Record<TaskStatus, string> = {
 };
 
 // --- COMPONENTS ---
-const TaskForm = ({ task, onSave, onOpenChange }: { task?: Omit<Task, 'id' | 'history'>; onSave: (data: Omit<Task, 'id' | 'history'>) => void; onOpenChange: (open: boolean) => void }) => {
-  const form = useForm<Omit<Task, 'id' | 'history'>>({
-    resolver: zodResolver(taskSchema.omit({ id: true, history: true })),
-    defaultValues: task ? { ...task } : { title: '', description: '', status: 'novo' },
-  });
-  const onSubmit = (data: Omit<Task, 'id' | 'history'>) => { onSave(data); onOpenChange(false); form.reset(); };
-  return (
-    <Form {...form}><form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Título</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-      <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Descrição</FormLabel><FormControl><Textarea {...field} /></FormControl></FormItem>)} />
-      <FormField control={form.control} name="deadline" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Prazo</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn('w-[240px] pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover></FormItem>)} />
-      <Button type="submit">Salvar Tarefa</Button>
-    </form></Form>
-  );
-};
+// TaskForm component moved to src/components/TaskForm.tsx
 
 const TaskCard = ({ task, onEdit, onDelete, onShowHistory }: { task: Task; onEdit: () => void; onDelete: () => void; onShowHistory: () => void; }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });

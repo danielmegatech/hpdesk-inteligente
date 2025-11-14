@@ -12,6 +12,7 @@ import { Edit, MoreVertical, PlusCircle, Trash2, BookOpen } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
+import ArticleForm from '@/components/ArticleForm'; // Import ArticleForm from its new location
 
 const articleSchema = z.object({
   id: z.string().optional(),
@@ -31,42 +32,7 @@ const initialArticles: Article[] = [
 
 const categories = ['Hardware', 'Software', 'Rede', 'Sistemas Internos', 'Segurança', 'Outros'];
 
-const ArticleForm = ({ article, onSave, onOpenChange }: { article?: Article; onSave: (article: Article) => void; onOpenChange: (open: boolean) => void }) => {
-  const form = useForm<Article>({
-    resolver: zodResolver(articleSchema),
-    defaultValues: article || { title: '', content: '', category: '' },
-  });
-
-  const onSubmit = (data: Article) => {
-    onSave(data);
-    onOpenChange(false);
-    form.reset();
-  };
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField control={form.control} name="title" render={({ field }) => (
-          <FormItem><FormLabel>Título</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-        )} />
-        <FormField control={form.control} name="content" render={({ field }) => (
-          <FormItem><FormLabel>Conteúdo</FormLabel><FormControl><Textarea {...field} rows={5} /></FormControl><FormMessage /></FormItem>
-        )} />
-        <FormField control={form.control} name="category" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Categoria</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl><SelectTrigger><SelectValue placeholder="Selecione uma categoria" /></SelectTrigger></FormControl>
-              <SelectContent>{categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <Button type="submit">Salvar Artigo</Button>
-      </form>
-    </Form>
-  );
-};
+// ArticleForm component moved to src/components/ArticleForm.tsx
 
 const KnowledgeBasePage = () => {
   const [articles, setArticles] = useState(initialArticles);

@@ -6,10 +6,10 @@ import { mindmapData, categories, MindmapNode } from '@/data/mindmap';
 import { PlayCircle, PlusCircle, BookOpen } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import TaskForm from './Tasks'; // Import TaskForm from TasksPage
-import ArticleForm from './KnowledgeBase'; // Import ArticleForm from KnowledgeBasePage
-import { Task } from './Tasks'; // Import Task type
-import { Article } from './KnowledgeBase'; // Import Article type
+import TaskForm from '@/components/TaskForm'; // Corrected import path
+import ArticleForm from '@/components/ArticleForm'; // Corrected import path
+import { Task } from '@/components/TaskForm'; // Import Task type from its new location
+import { Article } from '@/components/ArticleForm'; // Import Article type from its new location
 import { toast } from 'sonner';
 
 type ServiceState = 'idle' | 'selecting_category' | 'in_flow';

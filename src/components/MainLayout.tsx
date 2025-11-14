@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react';
 import { useSettings } from '@/hooks/use-settings';
 import { toast } from 'sonner';
 import { Task } from '@/pages/Tasks'; // Import Task type
+import { formatDistanceToNow } from 'date-fns'; // Import formatDistanceToNow
+import { ptBR } from 'date-fns/locale'; // Import ptBR locale
 
 const navItems = [
   { to: '/', label: 'Atendimento', icon: Home },
@@ -38,6 +40,7 @@ const MainLayout = () => {
   useEffect(() => {
     const checkWorkHoursAndTasks = () => {
       const now = new Date();
+      const today = now.toDateString(); // Moved 'today' definition here
       const [startHour, startMinute] = settings.workStartTime.split(':').map(Number);
       const [endHour, endMinute] = settings.workEndTime.split(':').map(Number);
       
@@ -50,7 +53,6 @@ const MainLayout = () => {
       // Welcome notification
       if (now >= startTime && now <= endTime) {
         const lastShown = localStorage.getItem('welcome-notification-date');
-        const today = new Date().toDateString();
         if (lastShown !== today) {
           toast.info('Bem-vindo ao seu turno!', { description: 'Tenha um ótimo dia de trabalho.' });
           localStorage.setItem('welcome-notification-date', today);
