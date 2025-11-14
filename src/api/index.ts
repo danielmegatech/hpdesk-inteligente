@@ -1,4 +1,4 @@
-import { AppNotification, apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiGetReportMetrics, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification } from './mockApi';
+import { AppNotification, apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiGetReportMetrics, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification, apiGetNotifications } from './mockApi'; // Adicionado apiGetNotifications aqui
 
 export type { AppNotification }; // Re-exportar o tipo separadamente
-export { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiGetReportMetrics, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification }; // Re-exportar os valores
+export { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiGetReportMetrics, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification, apiGetNotifications }; // Adicionado apiGetNotifications aqui
