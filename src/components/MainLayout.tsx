@@ -55,7 +55,7 @@ const MainLayout = () => {
   };
 
   useEffect(() => {
-    const checkWorkHoursAndTasks = () => {
+    const checkWorkHoursAndTasks = async () => { // Made async
       const now = new Date();
       const today = now.toDateString();
       const [startHour, startMinute] = settings.workStartTime.split(':').map(Number);
@@ -76,18 +76,28 @@ const MainLayout = () => {
         }
       }
 
-      // Task deadline notifications (using mock API)
-      const allTasks = apiGetTasks();
+      // Task deadline notifications (using Supabase API)
+      const allTasks = await apiGetTasks(); // Fetch tasks from Supabase
       allTasks.forEach(task => {
         if (task.deadline && task.status !== 'concluido' && task.status !== 'lixeira') {
           const diff = task.deadline.getTime() - now.getTime();
           const oneDay = 86400000; // milliseconds in a day
 
           if (diff > 0 && diff <= oneDay && !localStorage.getItem(`deadline-notified-${task.id}-${today}`)) {
-            apiAddNotification({ message: `Prazo a aproximar: "${task.title}"`, description: `Vence em ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.`, type: 'warning' });
+            apiAddNotification({ 
+              message: `Prazo a aproximar: "${task.title}"`, 
+              description: `Vence em ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.`, 
+              type: 'warning',
+              link: `/tasks?highlight=${task.id}` // Link to tasks page, highlight specific task
+            });
             localStorage.setItem(`deadline-notified-${task.id}-${today}`, 'true');
           } else if (diff <= 0 && !localStorage.getItem(`overdue-notified-${task.id}-${today}`)) {
-            apiAddNotification({ message: `Tarefa atrasada: "${task.title}"`, description: `Venceu ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.`, type: 'error' });
+            apiAddNotification({ 
+              message: `Tarefa atrasada: "${task.title}"`, 
+              description: `Venceu ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.`, 
+              type: 'error',
+              link: `/tasks?highlight=${task.id}` // Link to tasks page, highlight specific task
+            });
             localStorage.setItem(`overdue-notified-${task.id}-${today}`, 'true');
           }
         }
@@ -140,8 +150,8 @@ const MainLayout = () => {
           <DialogHeader><DialogTitle>Criar Nova Tarefa (via Assistente IA)</DialogTitle></DialogHeader>
           <TaskForm 
             task={initialTaskDataFromAI} 
-            onSave={(data) => {
-              apiAddTask(data);
+            onSave={async (data) => { // Made async
+              await apiAddTask(data); // Await the API call
               toast.success(`Tarefa "${data.title}" criada com sucesso!`);
               setIsAddTaskOpenFromAI(false);
               setInitialTaskDataFromAI(undefined);
@@ -156,8 +166,8 @@ const MainLayout = () => {
           <DialogHeader><DialogTitle>Adicionar Novo Artigo (via Assistente IA)</DialogTitle></DialogHeader>
           <ArticleForm 
             article={initialArticleDataFromAI} 
-            onSave={(data) => {
-              apiAddArticle(data);
+            onSave={async (data) => { // Made async
+              await apiAddArticle(data); // Await the API call
               toast.success(`Artigo "${data.title}" adicionado à Base de Conhecimento!`);
               setIsAddKnowledgeOpenFromAI(false);
               setInitialArticleDataFromAI(undefined);

@@ -13,7 +13,7 @@ const SettingsPage = () => {
 
   const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setSettings(prev => ({ ...prev, [id]: id === 'breakMinutes' ? parseInt(value) : value }));
+    setSettings(prev => ({ ...prev, [id]: value }));
   };
 
   return (
@@ -28,11 +28,12 @@ const SettingsPage = () => {
         </CardContent>
       </Card>
       <Card>
-        <CardHeader><CardTitle>Horário de Trabalho</CardTitle><CardDescription>Defina o seu horário para notificações inteligentes.</CardDescription></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardHeader><CardTitle>Horário de Trabalho e Intervalo</CardTitle><CardDescription>Defina o seu horário para notificações inteligentes.</CardDescription></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="space-y-2"><Label htmlFor="workStartTime">Início do Turno</Label><Input id="workStartTime" type="time" value={settings.workStartTime} onChange={handleSettingsChange} /></div>
           <div className="space-y-2"><Label htmlFor="workEndTime">Fim do Turno</Label><Input id="workEndTime" type="time" value={settings.workEndTime} onChange={handleSettingsChange} /></div>
-          <div className="space-y-2"><Label htmlFor="breakMinutes">Intervalo (minutos)</Label><Input id="breakMinutes" type="number" value={settings.breakMinutes} onChange={handleSettingsChange} placeholder="60" /></div>
+          <div className="space-y-2"><Label htmlFor="breakStartTime">Início do Intervalo</Label><Input id="breakStartTime" type="time" value={settings.breakStartTime} onChange={handleSettingsChange} /></div>
+          <div className="space-y-2"><Label htmlFor="breakEndTime">Fim do Intervalo</Label><Input id="breakEndTime" type="time" value={settings.breakEndTime} onChange={handleSettingsChange} /></div>
         </CardContent>
       </Card>
       <Card>

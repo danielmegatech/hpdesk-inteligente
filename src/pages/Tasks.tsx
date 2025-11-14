@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // Import useRef
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { CalendarIcon, Edit, MoreVertical, PlusCircle, Trash2, History } from 'lucide-react';
+import { CalendarIcon, Edit, MoreVertical, PlusCircle, Trash2, History, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -11,9 +11,11 @@ import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TaskForm, { Task } from '@/components/TaskForm'; // Import TaskForm and Task type
-import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask } from '@/api'; // Import mock API
-import { Calendar } from '@/components/ui/calendar'; // Importando Calendar
+import TaskForm, { Task } from '@/components/TaskForm';
+import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetTrashedTasks, apiRestoreTask, apiPermanentDeleteTask } from '@/api';
+import { Calendar } from '@/components/ui/calendar';
+import { toast } from 'sonner';
+import { useLocation, useSearchParams } from 'react-router-dom'; // Import useLocation and useSearchParams
 
 // --- TYPES AND SCHEMA ---
 const taskStatusMap = {
@@ -34,25 +36,43 @@ const statusColorMap: Record<TaskStatus, string> = {
 };
 
 // --- COMPONENTS ---
-const TaskCard = ({ task, onEdit, onDelete, onShowHistory }: { task: Task; onEdit: () => void; onDelete: () => void; onShowHistory: () => void; }) => {
+const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanentDelete, isTrashed = false, highlight = false }: { 
+  task: Task; 
+  onEdit: () => void; 
+  onDelete: () => void; 
+  onShowHistory: () => void; 
+  onRestore?: () => void; 
+  onPermanentDelete?: () => void;
+  isTrashed?: boolean;
+  highlight?: boolean; // New prop for highlighting
+}) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   
-  const lastHistoryEntry = task.history[task.history.length - 1];
   const timestampTitle = `Criado: ${format(task.createdAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` +
                          `Última atualização: ${format(task.updatedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` +
                          (task.completedAt ? `Concluído: ${format(task.completedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` : '') +
                          `Status: ${taskStatusMap[task.status]}`;
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} title={timestampTitle}>
-      <Card className={cn("bg-card group border-l-4 cursor-pointer", statusColorMap[task.status])} onClick={onEdit}><CardContent className="p-4">
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} title={timestampTitle} data-id={task.id}> {/* Add data-id for highlighting */}
+      <Card className={cn("bg-card group border-l-4 cursor-pointer", statusColorMap[task.status], { 'ring-4 ring-blue-500 ring-offset-2': highlight })} onClick={onEdit}><CardContent className="p-4">
         <div className="flex justify-between items-start"><h4 className="font-semibold mb-2">{task.title}</h4>
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
-              <DropdownMenuItem onClick={onShowHistory}><History className="mr-2 h-4 w-4" /> Histórico</DropdownMenuItem>
-              <DropdownMenuItem onClick={onDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
+              {!isTrashed && (
+                <>
+                  <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
+                  <DropdownMenuItem onClick={onShowHistory}><History className="mr-2 h-4 w-4" /> Histórico</DropdownMenuItem>
+                  <DropdownMenuItem onClick={onDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Mover para Lixeira</DropdownMenuItem>
+                </>
+              )}
+              {isTrashed && (
+                <>
+                  <DropdownMenuItem onClick={onRestore}><RotateCcw className="mr-2 h-4 w-4" /> Restaurar</DropdownMenuItem>
+                  <DropdownMenuItem onClick={onPermanentDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Excluir Permanentemente</DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -64,14 +84,32 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory }: { task: Task; onEdi
   );
 };
 
-const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory }: { status: TaskStatus; tasks: Task[]; onEdit: (task: Task) => void; onDelete: (task: Task) => void; onShowHistory: (task: Task) => void; }) => {
+const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory, highlightedTaskId }: { 
+  status: TaskStatus; 
+  tasks: Task[]; 
+  onEdit: (task: Task) => void; 
+  onDelete: (task: Task) => void; 
+  onShowHistory: (task: Task) => void; 
+  highlightedTaskId?: string; // New prop for highlighted task
+}) => {
   const { setNodeRef } = useSortable({ id: status, data: { type: 'container' } });
+  const columnRef = useRef<HTMLDivElement>(null); // Ref for the column
+
+  useEffect(() => {
+    if (highlightedTaskId) {
+      const highlightedTaskElement = columnRef.current?.querySelector(`[data-id="${highlightedTaskId}"]`);
+      if (highlightedTaskElement) {
+        highlightedTaskElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [highlightedTaskId, tasks]); // Re-run when tasks or highlightedTaskId changes
+
   return (
     <div ref={setNodeRef} className="flex flex-col w-full md:w-1/5 bg-muted/60 p-4 rounded-lg min-h-[200px]">
       <h3 className="text-lg font-semibold mb-4">{taskStatusMap[status]} ({tasks.length})</h3>
-      <div className="space-y-3 flex-grow">
+      <div ref={columnRef} className="space-y-3 flex-grow"> {/* Apply ref here */}
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-          {tasks.map(task => <TaskCard key={task.id} task={task} onEdit={() => onEdit(task)} onDelete={() => onDelete(task)} onShowHistory={() => onShowHistory(task)} />)}
+          {tasks.map(task => <TaskCard key={task.id} task={task} onEdit={() => onEdit(task)} onDelete={() => onDelete(task)} onShowHistory={() => onShowHistory(task)} highlight={task.id === highlightedTaskId} />)}
         </SortableContext>
       </div>
     </div>
@@ -80,35 +118,81 @@ const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory }: { stat
 
 const TasksPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [trashedTasks, setTrashedTasks] = useState<Task[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState('kanban');
+
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const highlightedTaskId = searchParams.get('highlight');
+
+  const fetchTasks = async () => {
+    const fetchedTasks = await apiGetTasks();
+    setTasks(fetchedTasks);
+  };
+
+  const fetchTrashedTasks = async () => {
+    const fetchedTrashedTasks = await apiGetTrashedTasks();
+    setTrashedTasks(fetchedTrashedTasks);
+  };
 
   useEffect(() => {
-    setTasks(apiGetTasks());
+    fetchTasks();
+    fetchTrashedTasks();
   }, []);
 
-  const handleSaveTask = (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
+  useEffect(() => {
+    if (highlightedTaskId && activeTab === 'kanban') {
+      // Find the task and scroll to it
+      const taskElement = document.querySelector(`[data-id="${highlightedTaskId}"]`);
+      if (taskElement) {
+        taskElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [highlightedTaskId, activeTab, tasks]); // Depend on tasks to ensure elements are rendered
+
+  const handleSaveTask = async (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
     if (selectedTask) { // Edit
       const updatedTask = { ...selectedTask, ...data };
-      apiUpdateTask(updatedTask);
+      await apiUpdateTask(updatedTask);
+      toast.success(`Tarefa "${updatedTask.title}" atualizada com sucesso!`);
     } else { // Add
-      apiAddTask(data);
+      const newTask = await apiAddTask(data);
+      if (newTask) {
+        toast.success(`Tarefa "${newTask.title}" criada com sucesso!`);
+      }
     }
-    setTasks(apiGetTasks()); // Refresh tasks from API
+    fetchTasks(); // Refresh tasks from API
     setSelectedTask(undefined);
   };
 
-  const handleDeleteTask = (taskToDelete: Task) => {
-    apiDeleteTask(taskToDelete.id);
-    setTasks(apiGetTasks()); // Refresh tasks from API
+  const handleDeleteTask = async (taskToDelete: Task) => {
+    await apiDeleteTask(taskToDelete.id); // Moves to trash
+    toast.info(`Tarefa "${taskToDelete.title}" movida para a lixeira.`);
+    fetchTasks();
+    fetchTrashedTasks();
+  };
+
+  const handleRestoreTask = async (taskToRestore: Task) => {
+    await apiRestoreTask(taskToRestore.id);
+    toast.success(`Tarefa "${taskToRestore.title}" restaurada.`);
+    fetchTasks();
+    fetchTrashedTasks();
+  };
+
+  const handlePermanentDeleteTask = async (taskToPermanentDelete: Task) => {
+    await apiPermanentDeleteTask(taskToPermanentDelete.id);
+    toast.success(`Tarefa "${taskToPermanentDelete.title}" excluída permanentemente.`);
+    fetchTrashedTasks();
   };
 
   const handleOpenEdit = (task: Task) => { setSelectedTask(task); setIsFormOpen(true); };
   const handleOpenAdd = () => { setSelectedTask(undefined); setIsFormOpen(true); };
   const handleShowHistory = (task: Task) => { setSelectedTask(task); setIsHistoryOpen(true); };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
     const activeId = active.id as string;
@@ -121,8 +205,9 @@ const TasksPage = () => {
     if (!overContainer || activeTask.status === overContainer) return;
 
     const updatedTask = { ...activeTask, status: overContainer };
-    apiUpdateTask(updatedTask); // Update via API
-    setTasks(apiGetTasks()); // Refresh tasks from API
+    await apiUpdateTask(updatedTask); // Update via API
+    toast.info(`Tarefa "${updatedTask.title}" movida para "${taskStatusMap[updatedTask.status]}".`);
+    fetchTasks(); // Refresh tasks from API
   };
 
   const tasksByStatus = (status: TaskStatus) => tasks.filter(t => t.status === status);
@@ -136,16 +221,17 @@ const TasksPage = () => {
         </Dialog>
         <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}><DialogContent>
           <DialogHeader><DialogTitle>Histórico da Tarefa</DialogTitle><DialogDescription>{selectedTask?.title}</DialogDescription></DialogHeader>
+          {/* History from Supabase would require a separate table/query. For now, this is mock data. */}
           <ul className="space-y-2">{selectedTask?.history.map((h, i) => <li key={i} className="text-sm"><strong>{taskStatusMap[h.status]}:</strong> {format(h.timestamp, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</li>).reverse()}</ul>
         </DialogContent></Dialog>
       </div>
-      <Tabs defaultValue="kanban">
-        <TabsList><TabsTrigger value="kanban">Kanban</TabsTrigger><TabsTrigger value="calendar">Calendário</TabsTrigger></TabsList>
+      <Tabs defaultValue="kanban" onValueChange={setActiveTab}>
+        <TabsList><TabsTrigger value="kanban">Kanban</TabsTrigger><TabsTrigger value="calendar">Calendário</TabsTrigger><TabsTrigger value="trash">Lixeira</TabsTrigger></TabsList>
         <TabsContent value="kanban">
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <div className="flex flex-col md:flex-row gap-6 mt-4">
-              {(Object.keys(taskStatusMap) as TaskStatus[]).map(status => (
-                <KanbanColumn key={status} status={status} tasks={tasksByStatus(status)} onEdit={handleOpenEdit} onDelete={handleDeleteTask} onShowHistory={handleShowHistory} />
+              {(Object.keys(taskStatusMap) as TaskStatus[]).filter(status => status !== 'lixeira').map(status => (
+                <KanbanColumn key={status} status={status} tasks={tasksByStatus(status)} onEdit={handleOpenEdit} onDelete={handleDeleteTask} onShowHistory={handleShowHistory} highlightedTaskId={highlightedTaskId || undefined} />
               ))}
             </div>
           </DndContext>
@@ -164,6 +250,28 @@ const TasksPage = () => {
               );
             }}}
           /></CardContent></Card>
+        </TabsContent>
+        <TabsContent value="trash">
+          <div className="mt-4 space-y-3">
+            {trashedTasks.length === 0 ? (
+              <p className="text-muted-foreground text-center p-8">A lixeira está vazia.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {trashedTasks.map(task => (
+                  <TaskCard 
+                    key={task.id} 
+                    task={task} 
+                    onEdit={() => { /* No edit in trash */ }} 
+                    onDelete={() => { /* No delete in trash */ }} 
+                    onShowHistory={() => handleShowHistory(task)} 
+                    onRestore={() => handleRestoreTask(task)}
+                    onPermanentDelete={() => handlePermanentDeleteTask(task)}
+                    isTrashed={true}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

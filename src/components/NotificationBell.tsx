@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AppNotification, apiGetNotifications, apiMarkNotificationAsRead, apiDeleteNotification } from '@/api';
 import { cn } from '@/lib/utils'; // Importando 'cn'
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const NotificationIcon = ({ type }: { type: AppNotification['type'] }) => {
   switch (type) {
@@ -22,6 +23,7 @@ const NotificationIcon = ({ type }: { type: AppNotification['type'] }) => {
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const unreadCount = notifications.filter(n => !n.read).length;
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     setNotifications(apiGetNotifications());
@@ -35,6 +37,13 @@ const NotificationBell = () => {
   const handleDelete = (id: string) => {
     apiDeleteNotification(id);
     setNotifications(apiGetNotifications());
+  };
+
+  const handleNotificationClick = (notification: AppNotification) => {
+    if (notification.link) {
+      navigate(notification.link);
+      handleMarkAsRead(notification.id); // Mark as read when clicked and navigated
+    }
   };
 
   return (
@@ -65,7 +74,11 @@ const NotificationBell = () => {
           ) : (
             <div className="flex flex-col">
               {notifications.map(notification => (
-                <div key={notification.id} className={cn("flex items-start gap-2 p-4 border-b", { "bg-accent/20": !notification.read })}>
+                <div 
+                  key={notification.id} 
+                  className={cn("flex items-start gap-2 p-4 border-b", { "bg-accent/20": !notification.read }, { "cursor-pointer hover:bg-accent/40": notification.link })}
+                  onClick={() => handleNotificationClick(notification)}
+                >
                   <NotificationIcon type={notification.type} />
                   <div className="flex-1">
                     <p className="text-sm font-medium">{notification.message}</p>
@@ -76,11 +89,11 @@ const NotificationBell = () => {
                   </div>
                   <div className="flex gap-1">
                     {!notification.read && (
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleMarkAsRead(notification.id)}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleMarkAsRead(notification.id); }}>
                         <Check className="h-4 w-4" />
                       </Button>
                     )}
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleDelete(notification.id)}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={(e) => { e.stopPropagation(); handleDelete(notification.id); }}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
