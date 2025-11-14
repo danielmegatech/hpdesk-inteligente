@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Edit, MoreVertical, PlusCircle, Trash2 } from 'lucide-react';
+import { Edit, MoreVertical, PlusCircle, Trash2, BookOpen } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { Separator } from '@/components/ui/separator';
 
 const articleSchema = z.object({
   id: z.string().optional(),
@@ -19,15 +20,16 @@ const articleSchema = z.object({
   category: z.string().min(1, 'A categoria é obrigatória.'),
 });
 
-type Article = z.infer<typeof articleSchema>;
+export type Article = z.infer<typeof articleSchema>; // Export Article type for use in other files
 
 const initialArticles: Article[] = [
-  { id: 'kb-1', title: 'Como configurar a impressora de rede?', content: '1. Abra o Painel de Controle...', category: 'Hardware' },
-  { id: 'kb-2', title: 'Como acessar a VPN da empresa?', content: 'Abra o cliente Cisco AnyConnect...', category: 'Rede' },
-  { id: 'kb-3', title: 'O que fazer quando um software trava?', content: 'Primeiro, tente fechar o programa...', category: 'Software' },
+  { id: 'kb-1', title: 'Como configurar a impressora de rede?', content: '1. Abra o Painel de Controle...\n2. Vá em "Dispositivos e Impressoras"...\n3. Clique em "Adicionar uma impressora"...', category: 'Hardware' },
+  { id: 'kb-2', title: 'Como acessar a VPN da empresa?', content: 'Abra o cliente Cisco AnyConnect...\nDigite o endereço vpn.suaempresa.com.br...', category: 'Rede' },
+  { id: 'kb-3', title: 'O que fazer quando um software trava?', content: 'Primeiro, tente fechar o programa pelo Gerenciador de Tarefas (Ctrl+Shift+Esc).', category: 'Software' },
+  { id: 'kb-4', title: 'Guia de Segurança de Senhas', content: 'Use senhas fortes e únicas. Não compartilhe suas senhas.', category: 'Segurança' },
 ];
 
-const categories = ['Hardware', 'Software', 'Rede', 'Sistemas Internos'];
+const categories = ['Hardware', 'Software', 'Rede', 'Sistemas Internos', 'Segurança', 'Outros'];
 
 const ArticleForm = ({ article, onSave, onOpenChange }: { article?: Article; onSave: (article: Article) => void; onOpenChange: (open: boolean) => void }) => {
   const form = useForm<Article>({
@@ -38,6 +40,7 @@ const ArticleForm = ({ article, onSave, onOpenChange }: { article?: Article; onS
   const onSubmit = (data: Article) => {
     onSave(data);
     onOpenChange(false);
+    form.reset();
   };
 
   return (
@@ -115,11 +118,16 @@ const KnowledgeBasePage = () => {
       </div>
       <div className="space-y-8">
         {categories.map(category => (
-          articlesByCategory[category] && (
-            <div key={category}>
-              <h2 className="text-2xl font-semibold mb-4">{category}</h2>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {articlesByCategory[category].map(article => (
+          <Card key={category} className="p-4">
+            <CardHeader className="p-0 pb-4">
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <BookOpen className="h-6 w-6 text-primary" /> {category}
+              </CardTitle>
+            </CardHeader>
+            <Separator className="mb-4" />
+            <CardContent className="p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {articlesByCategory[category] && articlesByCategory[category].length > 0 ? (
+                articlesByCategory[category].map(article => (
                   <Card key={article.id} className="flex flex-col group">
                     <CardHeader className="flex-row items-center justify-between">
                       <CardTitle className="text-lg">{article.title}</CardTitle>
@@ -135,10 +143,12 @@ const KnowledgeBasePage = () => {
                       <p className="text-muted-foreground text-sm whitespace-pre-line">{article.content}</p>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            </div>
-          )
+                ))
+              ) : (
+                <p className="text-muted-foreground col-span-full">Nenhum artigo nesta categoria.</p>
+              )}
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>

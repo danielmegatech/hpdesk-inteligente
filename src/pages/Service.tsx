@@ -3,8 +3,14 @@ import { Button } from '@/components/ui/button';
 import MindmapFlow from '@/components/MindmapFlow';
 import MindmapHistory from '@/components/MindmapHistory';
 import { mindmapData, categories, MindmapNode } from '@/data/mindmap';
-import { PlayCircle } from 'lucide-react';
+import { PlayCircle, PlusCircle, BookOpen } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import TaskForm from './Tasks'; // Import TaskForm from TasksPage
+import ArticleForm from './KnowledgeBase'; // Import ArticleForm from KnowledgeBasePage
+import { Task } from './Tasks'; // Import Task type
+import { Article } from './KnowledgeBase'; // Import Article type
+import { toast } from 'sonner';
 
 type ServiceState = 'idle' | 'selecting_category' | 'in_flow';
 
@@ -12,6 +18,8 @@ const ServicePage = () => {
   const [state, setState] = useState<ServiceState>('idle');
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
   const [history, setHistory] = useState<MindmapNode[]>([]);
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const [isAddKnowledgeOpen, setIsAddKnowledgeOpen] = useState(false);
 
   const handleStartService = () => {
     setState('selecting_category');
@@ -62,8 +70,19 @@ const ServicePage = () => {
   };
 
   const handleEscalate = () => {
-    // Logic for escalation, e.g., navigate to a specific end node or trigger a modal
-    handleSelectOption('end_escalar_tecnico'); // Use the new escalation end node
+    handleSelectOption('end_escalar_tecnico');
+  };
+
+  const handleSaveNewTask = (data: Omit<Task, 'id' | 'history'>) => {
+    // In a real app, this would send data to TasksPage state or a global store
+    toast.success(`Tarefa "${data.title}" criada com sucesso!`);
+    setIsAddTaskOpen(false);
+  };
+
+  const handleSaveNewArticle = (data: Article) => {
+    // In a real app, this would send data to KnowledgeBasePage state or a global store
+    toast.success(`Artigo "${data.title}" adicionado à Base de Conhecimento!`);
+    setIsAddKnowledgeOpen(false);
   };
 
   const renderContent = () => {
@@ -106,7 +125,23 @@ const ServicePage = () => {
         return (
           <>
             <MindmapHistory history={history} />
-            {currentNode && <MindmapFlow node={currentNode} onSelectOption={handleSelectOption} onReset={handleReset} onBack={handleBack} onEscalate={handleEscalate} />}
+            {currentNode && (
+              <MindmapFlow 
+                node={currentNode} 
+                onSelectOption={handleSelectOption} 
+                onReset={handleReset} 
+                onBack={handleBack} 
+                onEscalate={handleEscalate} 
+              />
+            )}
+            <div className="flex justify-center space-x-4 mt-8">
+              <Button variant="outline" onClick={() => setIsAddTaskOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Criar Tarefa
+              </Button>
+              <Button variant="outline" onClick={() => setIsAddKnowledgeOpen(true)}>
+                <BookOpen className="mr-2 h-4 w-4" /> Adicionar Conhecimento
+              </Button>
+            </div>
           </>
         );
       default:
@@ -117,6 +152,21 @@ const ServicePage = () => {
   return (
     <div className="flex flex-col items-center justify-center w-full h-full p-4">
       {renderContent()}
+
+      {/* Modals for Add Task and Add Knowledge */}
+      <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Criar Nova Tarefa</DialogTitle></DialogHeader>
+          <TaskForm onSave={handleSaveNewTask} onOpenChange={setIsAddTaskOpen} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddKnowledgeOpen} onOpenChange={setIsAddKnowledgeOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Adicionar Novo Artigo à Base de Conhecimento</DialogTitle></DialogHeader>
+          <ArticleForm onSave={handleSaveNewArticle} onOpenChange={setIsAddKnowledgeOpen} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

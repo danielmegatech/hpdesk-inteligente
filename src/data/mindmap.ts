@@ -280,4 +280,7 @@ export const mindmapData: Record<string, MindmapNode> = {
   'end_kb_redirect': { id: 'end_kb_redirect', question: 'Redirecionando para a Base de Conhecimento para ferramentas.', options: [] },
   'end_ticket_manutencao_avancada': { id: 'end_ticket_manutencao_avancada', question: 'Ticket criado para manutenção avançada.', options: [] },
   'end_escalar_tecnico': { id: 'end_escalar_tecnico', question: 'Atendimento escalado para técnico especializado/grupo de TI.', options: [] },
+  // New end nodes for direct actions
+  'action_create_task': { id: 'action_create_task', question: 'Criar uma nova tarefa?', options: [] },
+  'action_add_knowledge': { id: 'action_add_knowledge', question: 'Adicionar conhecimento à Base de Conhecimento?', options: [] },
 };

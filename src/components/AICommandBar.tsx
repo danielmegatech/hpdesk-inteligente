@@ -7,7 +7,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command"
-import { BrainCircuit, Calendar, ListTodo, PlusCircle } from "lucide-react"
+import { BrainCircuit, Calendar, ListTodo, PlusCircle, BookOpen } from "lucide-react"
 
 interface AICommandBarProps {
   open: boolean;
@@ -39,6 +39,14 @@ export function AICommandBar({ open, onOpenChange }: AICommandBarProps) {
            <CommandItem>
             <BrainCircuit className="mr-2 h-4 w-4" />
             <span>Adicionar à Base de Conhecimento</span>
+          </CommandItem>
+          <CommandItem>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            <span>Criar Tarefa</span>
+          </CommandItem>
+          <CommandItem>
+            <BookOpen className="mr-2 h-4 w-4" />
+            <span>Adicionar Conhecimento</span>
           </CommandItem>
         </CommandGroup>
       </CommandList>

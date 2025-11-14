@@ -21,7 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // --- TYPES AND SCHEMA ---
-const taskStatusSchema = z.enum(['todo', 'inProgress', 'done']);
+const taskStatusSchema = z.enum(['novo', 'emAndamento', 'pendenteAutorizacaoEscalado', 'concluido', 'lixeira']);
 type TaskStatus = z.infer<typeof taskStatusSchema>;
 
 const taskHistorySchema = z.object({
@@ -38,22 +38,37 @@ const taskSchema = z.object({
   status: taskStatusSchema,
   history: z.array(taskHistorySchema),
 });
-type Task = z.infer<typeof taskSchema>;
+export type Task = z.infer<typeof taskSchema>; // Export Task type for use in other files
 
 // --- INITIAL DATA ---
 const initialTasks: Task[] = [
-  { id: 'task-1', title: 'Verificar backup do servidor', description: 'Garantir que o backup noturno foi concluído.', status: 'todo', history: [{ status: 'todo', timestamp: new Date() }] },
-  { id: 'task-2', title: 'Reset de senha para usuário', description: 'Usuário: joao.silva', status: 'inProgress', deadline: new Date(), history: [{ status: 'todo', timestamp: new Date(Date.now() - 3600000) }, { status: 'inProgress', timestamp: new Date() }] },
-  { id: 'task-3', title: 'Trocar toner da impressora', description: 'Modelo HP LaserJet Pro M404dn', status: 'done', history: [{ status: 'todo', timestamp: new Date(Date.now() - 86400000) }, { status: 'inProgress', timestamp: new Date(Date.now() - 7200000) }, { status: 'done', timestamp: new Date() }] },
+  { id: 'task-1', title: 'Verificar backup do servidor', description: 'Garantir que o backup noturno foi concluído.', status: 'novo', history: [{ status: 'novo', timestamp: new Date() }] },
+  { id: 'task-2', title: 'Reset de senha para usuário', description: 'Usuário: joao.silva', status: 'emAndamento', deadline: new Date(), history: [{ status: 'novo', timestamp: new Date(Date.now() - 3600000) }, { status: 'emAndamento', timestamp: new Date() }] },
+  { id: 'task-3', title: 'Trocar toner da impressora', description: 'Modelo HP LaserJet Pro M404dn', status: 'concluido', history: [{ status: 'novo', timestamp: new Date(Date.now() - 86400000) }, { status: 'emAndamento', timestamp: new Date(Date.now() - 7200000) }, { status: 'concluido', timestamp: new Date() }] },
+  { id: 'task-4', title: 'Aguardar aprovação para compra de licença', description: 'Licença do software X para o departamento Y.', status: 'pendenteAutorizacaoEscalado', history: [{ status: 'novo', timestamp: new Date(Date.now() - 172800000) }, { status: 'pendenteAutorizacaoEscalado', timestamp: new Date(Date.now() - 86400000) }] },
 ];
 
-const statusMap: Record<TaskStatus, string> = { todo: 'A Fazer', inProgress: 'Em Andamento', done: 'Concluído' };
+const statusMap: Record<TaskStatus, string> = {
+  novo: 'Novo',
+  emAndamento: 'Em Andamento',
+  pendenteAutorizacaoEscalado: 'Pendente/Escalado',
+  concluido: 'Concluído',
+  lixeira: 'Lixeira',
+};
+
+const statusColorMap: Record<TaskStatus, string> = {
+  novo: 'border-blue-500',
+  emAndamento: 'border-yellow-500',
+  pendenteAutorizacaoEscalado: 'border-orange-500',
+  concluido: 'border-green-500',
+  lixeira: 'border-red-500',
+};
 
 // --- COMPONENTS ---
-const TaskForm = ({ task, onSave, onOpenChange }: { task?: Task; onSave: (data: Omit<Task, 'id' | 'history'>) => void; onOpenChange: (open: boolean) => void }) => {
+const TaskForm = ({ task, onSave, onOpenChange }: { task?: Omit<Task, 'id' | 'history'>; onSave: (data: Omit<Task, 'id' | 'history'>) => void; onOpenChange: (open: boolean) => void }) => {
   const form = useForm<Omit<Task, 'id' | 'history'>>({
     resolver: zodResolver(taskSchema.omit({ id: true, history: true })),
-    defaultValues: task ? { ...task } : { title: '', description: '', status: 'todo' },
+    defaultValues: task ? { ...task } : { title: '', description: '', status: 'novo' },
   });
   const onSubmit = (data: Omit<Task, 'id' | 'history'>) => { onSave(data); onOpenChange(false); form.reset(); };
   return (
@@ -71,7 +86,7 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory }: { task: Task; onEdi
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <Card className="bg-card group"><CardContent className="p-4">
+      <Card className={cn("bg-card group border-l-4", statusColorMap[task.status])}><CardContent className="p-4">
         <div className="flex justify-between items-start"><h4 className="font-semibold mb-2">{task.title}</h4>
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -91,9 +106,9 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory }: { task: Task; onEdi
 const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory }: { status: TaskStatus; tasks: Task[]; onEdit: (task: Task) => void; onDelete: (task: Task) => void; onShowHistory: (task: Task) => void; }) => {
   const { setNodeRef } = useSortable({ id: status, data: { type: 'container' } });
   return (
-    <div ref={setNodeRef} className="flex flex-col w-full md:w-1/3 bg-muted/60 p-4 rounded-lg">
+    <div ref={setNodeRef} className="flex flex-col w-full md:w-1/5 bg-muted/60 p-4 rounded-lg min-h-[200px]">
       <h3 className="text-lg font-semibold mb-4">{statusMap[status]} ({tasks.length})</h3>
-      <div className="space-y-3">
+      <div className="space-y-3 flex-grow">
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map(task => <TaskCard key={task.id} task={task} onEdit={() => onEdit(task)} onDelete={() => onDelete(task)} onShowHistory={() => onShowHistory(task)} />)}
         </SortableContext>

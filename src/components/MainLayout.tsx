@@ -7,6 +7,7 @@ import { AICommandBar } from './AICommandBar';
 import { useState, useEffect } from 'react';
 import { useSettings } from '@/hooks/use-settings';
 import { toast } from 'sonner';
+import { Task } from '@/pages/Tasks'; // Import Task type
 
 const navItems = [
   { to: '/', label: 'Atendimento', icon: Home },
@@ -29,9 +30,13 @@ const NavContent = () => (
 const MainLayout = () => {
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const { settings } = useSettings();
+  // For now, tasks are managed within TasksPage. For global notifications,
+  // a more robust state management (like React Context or Redux) would be needed.
+  // For this iteration, we'll simulate task data for notifications.
+  const [tasks, setTasks] = useState<Task[]>([]); // Placeholder for tasks
 
   useEffect(() => {
-    const checkWorkHours = () => {
+    const checkWorkHoursAndTasks = () => {
       const now = new Date();
       const [startHour, startMinute] = settings.workStartTime.split(':').map(Number);
       const [endHour, endMinute] = settings.workEndTime.split(':').map(Number);
@@ -42,8 +47,8 @@ const MainLayout = () => {
       const endTime = new Date();
       endTime.setHours(endHour, endMinute, 0, 0);
 
+      // Welcome notification
       if (now >= startTime && now <= endTime) {
-        // Check if notification was already shown today
         const lastShown = localStorage.getItem('welcome-notification-date');
         const today = new Date().toDateString();
         if (lastShown !== today) {
@@ -51,8 +56,35 @@ const MainLayout = () => {
           localStorage.setItem('welcome-notification-date', today);
         }
       }
+
+      // Simulate task deadline notifications (in a real app, this would fetch actual tasks)
+      const simulatedTasks: Task[] = [
+        { id: 'sim-task-1', title: 'Reunião com cliente X', description: 'Preparar apresentação.', status: 'emAndamento', deadline: new Date(Date.now() + 3600000), history: [] }, // Due in 1 hour
+        { id: 'sim-task-2', title: 'Enviar relatório mensal', description: 'Finalizar dados.', status: 'novo', deadline: new Date(Date.now() + 86400000 * 2), history: [] }, // Due in 2 days
+      ];
+
+      simulatedTasks.forEach(task => {
+        if (task.deadline && task.status !== 'concluido' && task.status !== 'lixeira') {
+          const diff = task.deadline.getTime() - now.getTime();
+          const oneDay = 86400000; // milliseconds in a day
+          const oneHour = 3600000; // milliseconds in an hour
+
+          if (diff > 0 && diff <= oneDay && !localStorage.getItem(`deadline-notified-${task.id}-${today}`)) {
+            toast.warning(`Prazo se aproximando: "${task.title}"`, { description: `Vence em ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.` });
+            localStorage.setItem(`deadline-notified-${task.id}-${today}`, 'true');
+          } else if (diff <= 0 && !localStorage.getItem(`overdue-notified-${task.id}-${today}`)) {
+            toast.error(`Tarefa atrasada: "${task.title}"`, { description: `Venceu ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.` });
+            localStorage.setItem(`overdue-notified-${task.id}-${today}`, 'true');
+          }
+        }
+      });
     };
-    checkWorkHours();
+
+    // Run once on mount and then every hour
+    checkWorkHoursAndTasks();
+    const intervalId = setInterval(checkWorkHoursAndTasks, 3600000); // Check every hour
+
+    return () => clearInterval(intervalId);
   }, [settings]);
 
   return (
