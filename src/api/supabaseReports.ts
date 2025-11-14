@@ -1,4 +1,4 @@
-import { apiGetTasks, apiGetTrashedTasks } from './supabaseTasks';
+import { apiGetTasks, apiGetTrashedTasks } from './supabaseTasks'; // Removido .ts
 import { apiGetArticles } from './mockApi'; // Articles still from mock
 import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
