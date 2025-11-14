@@ -20,19 +20,19 @@ const SettingsPage = () => {
     <div className="w-full max-w-4xl mx-auto space-y-8">
       <div className="text-center"><h1 className="text-3xl font-bold">Ajustes</h1><p className="text-muted-foreground">Personalize as configurações do aplicativo.</p></div>
       <Card>
-        <CardHeader><CardTitle>Perfil</CardTitle><CardDescription>Atualize suas informações de perfil.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Perfil</CardTitle><CardDescription>Atualize as suas informações de perfil.</CardDescription></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2"><Label htmlFor="name">Nome</Label><Input id="name" defaultValue="Técnico Exemplo" /></div>
           <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" defaultValue="tecnico@helpdesk.app" /></div>
-          <Button>Salvar Alterações</Button>
+          <Button>Guardar Alterações</Button>
         </CardContent>
       </Card>
       <Card>
-        <CardHeader><CardTitle>Horário de Trabalho</CardTitle><CardDescription>Defina seu horário para notificações inteligentes.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Horário de Trabalho</CardTitle><CardDescription>Defina o seu horário para notificações inteligentes.</CardDescription></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2"><Label htmlFor="workStartTime">Início do Turno</Label><Input id="workStartTime" type="time" value={settings.workStartTime} onChange={handleSettingsChange} /></div>
           <div className="space-y-2"><Label htmlFor="workEndTime">Fim do Turno</Label><Input id="workEndTime" type="time" value={settings.workEndTime} onChange={handleSettingsChange} /></div>
-          <div className="space-y-2"><Label htmlFor="breakMinutes">Intervalo (minutos)</Label><Input id="breakMinutes" type="number" value={settings.breakMinutes} onChange={handleSettingsChange} /></div>
+          <div className="space-y-2"><Label htmlFor="breakMinutes">Intervalo (minutos)</Label><Input id="breakMinutes" type="number" value={settings.breakMinutes} onChange={handleSettingsChange} placeholder="60" /></div>
         </CardContent>
       </Card>
       <Card>
@@ -46,10 +46,10 @@ const SettingsPage = () => {
         </CardContent>
       </Card>
        <Card>
-        <CardHeader><CardTitle>Notificações</CardTitle><CardDescription>Gerencie como você recebe notificações.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Notificações</CardTitle><CardDescription>Gerencie como recebe notificações.</CardDescription></CardHeader>
         <CardContent className="space-y-4">
             <div className="flex items-center justify-between rounded-lg border p-3"><Label htmlFor="new-task">Novas tarefas atribuídas</Label><Switch id="new-task" defaultChecked /></div>
-            <div className="flex items-center justify-between rounded-lg border p-3"><Label htmlFor="task-deadline">Prazos de tarefas se aproximando</Label><Switch id="task-deadline" defaultChecked /></div>
+            <div className="flex items-center justify-between rounded-lg border p-3"><Label htmlFor="task-deadline">Prazos de tarefas a aproximar</Label><Switch id="task-deadline" defaultChecked /></div>
             <div className="flex items-center justify-between rounded-lg border p-3"><Label htmlFor="massive-alert">Alertas de problemas massivos</Label><Switch id="massive-alert" /></div>
         </CardContent>
       </Card>

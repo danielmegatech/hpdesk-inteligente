@@ -1,4 +1,4 @@
-import { Cpu, Wifi, AppWindow, KeyRound, UserCheck, CalendarPlus, AlertTriangle, MoreHorizontal, HardDrive, Monitor, Speaker, Wrench, Cable, Router, Server, Database, Shield, Lock, Printer, Camera, BatteryCharging, Lightbulb, Handshake, FileText, FlaskConical } from 'lucide-react';
+import { Cpu, Wifi, AppWindow, KeyRound, UserCheck, CalendarPlus, AlertTriangle, MoreHorizontal, HardDrive, Monitor, Speaker, Wrench, Cable, Router, Server, Database, Shield, Lock, Printer, Camera, BatteryCharging, Lightbulb, Handshake, FileText, FlaskConical, GraduationCap, Book, Briefcase, School, CreditCard, CalendarDays, Video, Users, LayoutDashboard } from 'lucide-react';
 
 export interface MindmapNode {
   id: string;
@@ -18,6 +18,10 @@ export const categories = [
   { id: 'energia_infraestrutura', name: 'Energia e Infraestrutura', icon: BatteryCharging, startNodeId: 'energia_start' },
   { id: 'suporte_boas_praticas', name: 'Suporte Técnico e Boas Práticas', icon: Handshake, startNodeId: 'suporte_start' },
   { id: 'manutencao_avancada', name: 'Manutenção Avançada', icon: FlaskConical, startNodeId: 'manutencao_avancada_start' },
+  { id: 'atendimento_aluno', name: 'Atendimento a Alunos', icon: GraduationCap, startNodeId: 'aluno_start' },
+  { id: 'atendimento_professor', name: 'Atendimento a Professores', icon: Book, startNodeId: 'professor_start' },
+  { id: 'atendimento_staff', name: 'Atendimento a Staff', icon: Briefcase, startNodeId: 'staff_start' },
+  { id: 'software_academico', name: 'Software Académico', icon: School, startNodeId: 'software_academico_start' },
   { id: 'others', name: 'Outros', icon: MoreHorizontal, startNodeId: 'others_start' },
 ];
 
@@ -28,14 +32,14 @@ export const mindmapData: Record<string, MindmapNode> = {
     question: 'Qual o problema de hardware?',
     options: [
       { text: 'PC não liga', nextNodeId: 'pc_nao_liga_start' },
-      { text: 'PC liga mas não dá tela', nextNodeId: 'pc_liga_nao_da_tela_start' },
-      { text: 'Barulhos/sons/bipes', nextNodeId: 'barulhos_bipes_start' },
+      { text: 'PC liga mas não dá ecrã', nextNodeId: 'pc_liga_nao_da_ecra_start' },
+      { text: 'Impressora/Toner', nextNodeId: 'impressora_toner_start' },
       { text: 'Outro', nextNodeId: 'hardware_outros' },
     ],
   },
   'pc_nao_liga_start': {
     id: 'pc_nao_liga_start',
-    question: 'O cabo de força está conectado corretamente na tomada e no PC?',
+    question: 'O cabo de alimentação está ligado corretamente à tomada e ao PC?',
     options: [
       { text: 'Sim', nextNodeId: 'pc_nao_liga_fonte_barulho' },
       { text: 'Não', nextNodeId: 'end_instruct_connect_cable' },
@@ -43,58 +47,94 @@ export const mindmapData: Record<string, MindmapNode> = {
   },
   'pc_nao_liga_fonte_barulho': {
     id: 'pc_nao_liga_fonte_barulho',
-    question: 'A fonte de alimentação faz algum barulho ou cheiro de queimado?',
+    question: 'A fonte de alimentação faz algum ruído ou cheiro a queimado?',
     options: [
       { text: 'Sim', nextNodeId: 'end_ticket_fonte_problema' },
       { text: 'Não', nextNodeId: 'end_ticket_diagnostico_hardware' },
     ],
   },
-  'pc_liga_nao_da_tela_start': {
-    id: 'pc_liga_nao_da_tela_start',
+  'pc_liga_nao_da_ecra_start': {
+    id: 'pc_liga_nao_da_ecra_start',
     question: 'O monitor está ligado e conectado ao PC?',
     options: [
-      { text: 'Sim', nextNodeId: 'pc_liga_nao_da_tela_cabo_video' },
+      { text: 'Sim', nextNodeId: 'pc_liga_nao_da_ecra_cabo_video' },
       { text: 'Não', nextNodeId: 'end_instruct_ligar_monitor' },
     ],
   },
-  'pc_liga_nao_da_tela_cabo_video': {
-    id: 'pc_liga_nao_da_tela_cabo_video',
+  'pc_liga_nao_da_ecra_cabo_video': {
+    id: 'pc_liga_nao_da_ecra_cabo_video',
     question: 'O cabo de vídeo está firmemente conectado em ambas as pontas?',
     options: [
       { text: 'Sim', nextNodeId: 'end_ticket_diagnostico_video' },
       { text: 'Não', nextNodeId: 'end_instruct_conectar_cabo_video' },
     ],
   },
+  'impressora_toner_start': {
+    id: 'impressora_toner_start',
+    question: 'Qual o problema com a impressora ou toner?',
+    options: [
+      { text: 'Impressora não imprime', nextNodeId: 'impressora_nao_imprime' },
+      { text: 'Trocar toner/cartucho', nextNodeId: 'impressora_trocar_toner' },
+      { text: 'Outro', nextNodeId: 'end_ticket_impressora' },
+    ],
+  },
+  'impressora_nao_imprime': {
+    id: 'impressora_nao_imprime',
+    question: 'A impressora está ligada e conectada à rede/PC?',
+    options: [
+      { text: 'Sim', nextNodeId: 'end_ticket_impressora_diagnostico' },
+      { text: 'Não', nextNodeId: 'end_instruct_ligar_impressora' },
+    ],
+  },
+  'impressora_trocar_toner': {
+    id: 'impressora_trocar_toner',
+    question: 'O toner/cartucho está disponível para troca?',
+    options: [
+      { text: 'Sim', nextNodeId: 'end_instruct_trocar_toner' },
+      { text: 'Não', nextNodeId: 'end_ticket_solicitar_toner' },
+    ],
+  },
   'barulhos_bipes_start': {
     id: 'barulhos_bipes_start',
-    question: 'Qual o padrão de bipes ou tipo de barulho?',
+    question: 'Qual o padrão de bipes ou tipo de ruído?',
     options: [
       { text: 'Bipes contínuos/longos', nextNodeId: 'end_ticket_problema_memoria' },
-      { text: 'Barulho de HD/ventoinha', nextNodeId: 'end_ticket_diagnostico_hardware' },
+      { text: 'Ruído de HD/ventoinha', nextNodeId: 'end_ticket_diagnostico_hardware' },
       { text: 'Outro', nextNodeId: 'end_ticket_diagnostico_hardware' },
     ],
   },
-  'hardware_outros': { id: 'hardware_outros', question: 'Por favor, descreva o problema de hardware.', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
+  'hardware_outros': { id: 'hardware_outros', question: 'Por favor, descreva o problema de hardware.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
   // --- Redes e Conectividade Flow ---
   'redes_start': {
     id: 'redes_start',
     question: 'Qual o problema de rede?',
     options: [
-      { text: 'Não acessa internet/rede', nextNodeId: 'network_check_cable' },
+      { text: 'Não acede à internet/rede', nextNodeId: 'network_check_cable' },
+      { text: 'Problema com Wi-Fi', nextNodeId: 'wifi_problema_start' },
       { text: 'Problema com VPN/Firewall', nextNodeId: 'vpn_firewall_start' },
-      { text: 'Configuração de IP/Wi-Fi', nextNodeId: 'config_ip_wifi_start' },
       { text: 'Outro', nextNodeId: 'redes_outros' },
     ],
   },
   'network_check_cable': {
     id: 'network_check_cable',
-    question: 'O cabo de rede está conectado e com a luz piscando?',
+    question: 'O cabo de rede está conectado e com a luz a piscar?',
     options: [
       { text: 'Sim', nextNodeId: 'end_ticket_network_point' },
       { text: 'Não', nextNodeId: 'end_instruct_connect_cable' },
     ],
   },
+  'wifi_problema_start': {
+    id: 'wifi_problema_start',
+    question: 'O problema é com a rede Wi-Fi da universidade (Eduroam/U-Porto)?',
+    options: [
+      { text: 'Não consigo ligar', nextNodeId: 'wifi_nao_liga' },
+      { text: 'Conexão instável', nextNodeId: 'wifi_instavel' },
+      { text: 'Outro', nextNodeId: 'end_ticket_config_wifi' },
+    ],
+  },
+  'wifi_nao_liga': { id: 'wifi_nao_liga', question: 'Já tentou reiniciar o dispositivo e esquecer/reconectar a rede?', options: [{ text: 'Sim', nextNodeId: 'end_ticket_config_wifi' }, { text: 'Não', nextNodeId: 'end_instruct_wifi_reset' }] },
+  'wifi_instavel': { id: 'wifi_instavel', question: 'O problema ocorre em todas as áreas da universidade ou apenas em um local específico?', options: [{ text: 'Local específico', nextNodeId: 'end_ticket_network_point' }, { text: 'Todas as áreas', nextNodeId: 'end_ticket_config_wifi' }] },
   'vpn_firewall_start': {
     id: 'vpn_firewall_start',
     question: 'O problema é com acesso à VPN ou bloqueio de firewall?',
@@ -103,30 +143,22 @@ export const mindmapData: Record<string, MindmapNode> = {
       { text: 'Site/serviço bloqueado', nextNodeId: 'end_ticket_firewall' },
     ],
   },
-  'config_ip_wifi_start': {
-    id: 'config_ip_wifi_start',
-    question: 'Precisa configurar IP fixo ou Wi-Fi?',
-    options: [
-      { text: 'Configurar IP fixo', nextNodeId: 'end_ticket_config_ip' },
-      { text: 'Configurar Wi-Fi', nextNodeId: 'end_ticket_config_wifi' },
-    ],
-  },
-  'redes_outros': { id: 'redes_outros', question: 'Por favor, descreva o problema de rede.', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
+  'redes_outros': { id: 'redes_outros', question: 'Por favor, descreva o problema de rede.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
   // --- Sistemas Operacionais e Software Flow ---
   'sistemas_start': {
     id: 'sistemas_start',
-    question: 'Qual o problema com sistema operacional ou software?',
+    question: 'Qual o problema com sistema operativo ou software?',
     options: [
       { text: 'PC lento/otimização', nextNodeId: 'otimizacao_windows_start' },
       { text: 'Instalação/formatação', nextNodeId: 'instalacao_formatacao_start' },
-      { text: 'Bugs específicos', nextNodeId: 'bugs_especificos_start' },
+      { text: 'Bugs específicos (Office 365, Teams, Zoom)', nextNodeId: 'bugs_software_universitario_start' },
       { text: 'Outro', nextNodeId: 'sistemas_outros' },
     ],
   },
   'otimizacao_windows_start': {
     id: 'otimizacao_windows_start',
-    question: 'Já tentou reiniciar o PC e limpar arquivos temporários?',
+    question: 'Já tentou reiniciar o PC e limpar ficheiros temporários?',
     options: [
       { text: 'Sim', nextNodeId: 'end_ticket_otimizacao_avancada' },
       { text: 'Não', nextNodeId: 'end_instruct_otimizacao_basica' },
@@ -140,55 +172,71 @@ export const mindmapData: Record<string, MindmapNode> = {
       { text: 'Instalar programa', nextNodeId: 'end_ticket_instalacao_software' },
     ],
   },
-  'bugs_especificos_start': {
-    id: 'bugs_especificos_start',
-    question: 'Qual software está apresentando o bug?',
+  'bugs_software_universitario_start': {
+    id: 'bugs_software_universitario_start',
+    question: 'Qual software está a apresentar o bug?',
     options: [
-      { text: 'Excel/Office', nextNodeId: 'end_ticket_bug_office' },
-      { text: 'Sistema Contábil', nextNodeId: 'end_ticket_bug_contabil' },
+      { text: 'Office 365 (Word, Excel, PowerPoint)', nextNodeId: 'end_ticket_bug_office' },
+      { text: 'Microsoft Teams', nextNodeId: 'end_ticket_bug_teams' },
+      { text: 'Zoom', nextNodeId: 'end_ticket_bug_zoom' },
       { text: 'Outro', nextNodeId: 'end_ticket_bug_software' },
     ],
   },
-  'sistemas_outros': { id: 'sistemas_outros', question: 'Por favor, descreva o problema de sistema/software.', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
+  'sistemas_outros': { id: 'sistemas_outros', question: 'Por favor, descreva o problema de sistema/software.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
   // --- Segurança e Governança Flow ---
   'seguranca_start': {
     id: 'seguranca_start',
     question: 'Qual o tópico de segurança?',
     options: [
+      { text: 'Perda/Reset de Senha', nextNodeId: 'perda_senha_start' },
       { text: 'LGPD/Segurança da Informação', nextNodeId: 'lgpd_si_start' },
       { text: 'Ransomware/Proteção', nextNodeId: 'ransomware_start' },
-      { text: 'Segurança de Senhas', nextNodeId: 'seguranca_senhas_start' },
       { text: 'Outro', nextNodeId: 'seguranca_outros' },
     ],
   },
-  'lgpd_si_start': { id: 'lgpd_si_start', question: 'Qual a dúvida sobre LGPD/Segurança da Informação?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_lgpd' }] },
+  'perda_senha_start': {
+    id: 'perda_senha_start',
+    question: 'A senha é do email institucional, portal académico ou outro serviço?',
+    options: [
+      { text: 'Email/Portal Académico', nextNodeId: 'end_instruct_reset_senha_portal' },
+      { text: 'Outro serviço', nextNodeId: 'end_ticket_reset_senha_geral' },
+    ],
+  },
+  'lgpd_si_start': { id: 'lgpd_si_start', question: 'Qual a dúvida sobre LGPD/Segurança da Informação?', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket_lgpd' }] },
   'ransomware_start': { id: 'ransomware_start', question: 'Suspeita de ataque de ransomware ou precisa de proteção?', options: [{ text: 'Criar Alerta de Segurança', nextNodeId: 'end_ticket_ransomware' }] },
-  'seguranca_senhas_start': { id: 'seguranca_senhas_start', question: 'Precisa de orientações sobre segurança de senhas?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_seguranca_senhas' }] },
-  'seguranca_outros': { id: 'seguranca_outros', question: 'Por favor, descreva o tópico de segurança.', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
+  'seguranca_outros': { id: 'seguranca_outros', question: 'Por favor, descreva o tópico de segurança.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
   // --- Periféricos e Dispositivos Flow ---
   'perifericos_start': {
     id: 'perifericos_start',
     question: 'Qual o problema com periféricos/dispositivos?',
     options: [
-      { text: 'Impressora', nextNodeId: 'impressora_start' },
-      { text: 'Monitor/Webcam', nextNodeId: 'monitor_webcam_start' },
-      { text: 'Mouse/Teclado/USB', nextNodeId: 'mouse_teclado_usb_start' },
+      { text: 'Ecrãs Táteis HyFlex', nextNodeId: 'ecras_tateis_hyflex_start' },
+      { text: 'Webcams', nextNodeId: 'webcams_start' },
+      { text: 'Monitor/Projetor', nextNodeId: 'monitor_projetor_start' },
       { text: 'Outro', nextNodeId: 'perifericos_outros' },
     ],
   },
-  'impressora_start': {
-    id: 'impressora_start',
-    question: 'A impressora está ligada e conectada?',
+  'ecras_tateis_hyflex_start': {
+    id: 'ecras_tateis_hyflex_start',
+    question: 'O ecrã tátil não responde ou não exibe imagem?',
     options: [
-      { text: 'Sim', nextNodeId: 'end_ticket_impressora' },
-      { text: 'Não', nextNodeId: 'end_instruct_ligar_impressora' },
+      { text: 'Não responde ao toque', nextNodeId: 'end_ticket_ecra_tatil_toque' },
+      { text: 'Não exibe imagem', nextNodeId: 'end_ticket_ecra_tatil_imagem' },
+      { text: 'Dúvida de utilização', nextNodeId: 'end_kb_hyflex_guide' },
     ],
   },
-  'monitor_webcam_start': { id: 'monitor_webcam_start', question: 'Qual o problema com monitor ou webcam?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_periferico' }] },
-  'mouse_teclado_usb_start': { id: 'mouse_teclado_usb_start', question: 'Qual o problema com mouse, teclado ou dispositivo USB?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_periferico' }] },
-  'perifericos_outros': { id: 'perifericos_outros', question: 'Por favor, descreva o problema com periféricos.', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
+  'webcams_start': {
+    id: 'webcams_start',
+    question: 'A webcam não funciona ou a imagem está com problemas?',
+    options: [
+      { text: 'Não funciona', nextNodeId: 'end_ticket_webcam_nao_funciona' },
+      { text: 'Problema de imagem/áudio', nextNodeId: 'end_ticket_webcam_problema_imagem' },
+    ],
+  },
+  'monitor_projetor_start': { id: 'monitor_projetor_start', question: 'Qual o problema com monitor ou projetor?', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket_periferico' }] },
+  'perifericos_outros': { id: 'perifericos_outros', question: 'Por favor, descreva o problema com periféricos.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
   // --- Energia e Infraestrutura Flow ---
   'energia_start': {
@@ -200,9 +248,9 @@ export const mindmapData: Record<string, MindmapNode> = {
       { text: 'Outro', nextNodeId: 'energia_outros' },
     ],
   },
-  'estabilizador_nobreak_start': { id: 'estabilizador_nobreak_start', question: 'Problema com estabilizador ou nobreak?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_energia' }] },
-  'tomada_fiacao_start': { id: 'tomada_fiacao_start', question: 'Problema com tomada ou fiação elétrica?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_eletrica' }] },
-  'energia_outros': { id: 'energia_outros', question: 'Por favor, descreva o problema de energia.', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
+  'estabilizador_nobreak_start': { id: 'estabilizador_nobreak_start', question: 'Problema com estabilizador ou nobreak?', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket_energia' }] },
+  'tomada_fiacao_start': { id: 'tomada_fiacao_start', question: 'Problema com tomada ou fiação elétrica?', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket_eletrica' }] },
+  'energia_outros': { id: 'energia_outros', question: 'Por favor, descreva o problema de energia.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
   // --- Suporte Técnico e Boas Práticas Flow ---
   'suporte_start': {
@@ -214,9 +262,9 @@ export const mindmapData: Record<string, MindmapNode> = {
       { text: 'Outro', nextNodeId: 'suporte_outros' },
     ],
   },
-  'duvida_atendimento_start': { id: 'duvida_atendimento_start', question: 'Qual a dúvida sobre o processo de atendimento?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_suporte' }] },
+  'duvida_atendimento_start': { id: 'duvida_atendimento_start', question: 'Qual a dúvida sobre o processo de atendimento?', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket_suporte' }] },
   'ferramentas_indispensaveis_start': { id: 'ferramentas_indispensaveis_start', question: 'Precisa de informações sobre ferramentas de suporte?', options: [{ text: 'Consultar Base de Conhecimento', nextNodeId: 'end_kb_redirect' }] },
-  'suporte_outros': { id: 'suporte_outros', question: 'Por favor, descreva o tópico de suporte.', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
+  'suporte_outros': { id: 'suporte_outros', question: 'Por favor, descreva o tópico de suporte.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
   // --- Manutenção Avançada Flow ---
   'manutencao_avancada_start': {
@@ -225,61 +273,140 @@ export const mindmapData: Record<string, MindmapNode> = {
     options: [
       { text: 'Limpeza/Troca de Pasta Térmica', nextNodeId: 'limpeza_pasta_termica_start' },
       { text: 'Diagnóstico de Hardware', nextNodeId: 'diagnostico_hardware_avancado_start' },
-      { text: 'Eletrônica Básica', nextNodeId: 'eletronica_basica_start' },
+      { text: 'Eletrónica Básica', nextNodeId: 'eletronica_basica_start' },
       { text: 'Outro', nextNodeId: 'manutencao_avancada_outros' },
     ],
   },
-  'limpeza_pasta_termica_start': { id: 'limpeza_pasta_termica_start', question: 'Precisa de guia para limpeza ou troca de pasta térmica?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_manutencao_avancada' }] },
-  'diagnostico_hardware_avancado_start': { id: 'diagnostico_hardware_avancado_start', question: 'Precisa de ajuda com diagnóstico avançado de hardware?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_manutencao_avancada' }] },
-  'eletronica_basica_start': { id: 'eletronica_basica_start', question: 'Dúvidas sobre eletrônica básica (bateria, jumper)?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket_manutencao_avancada' }] },
-  'manutencao_avancada_outros': { id: 'manutencao_avancada_outros', question: 'Por favor, descreva o tópico de manutenção avançada.', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
+  'limpeza_pasta_termica_start': { id: 'limpeza_pasta_termica_start', question: 'Precisa de guia para limpeza ou troca de pasta térmica?', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket_manutencao_avancada' }] },
+  'diagnostico_hardware_avancado_start': { id: 'diagnostico_hardware_avancado_start', question: 'Precisa de ajuda com diagnóstico avançado de hardware?', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket_manutencao_avancada' }] },
+  'eletronica_basica_start': { id: 'eletronica_basica_start', question: 'Dúvidas sobre eletrónica básica (bateria, jumper)?', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket_manutencao_avancada' }] },
+  'manutencao_avancada_outros': { id: 'manutencao_avancada_outros', question: 'Por favor, descreva o tópico de manutenção avançada.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
-  // --- Existing Flows (simplified for brevity in this update) ---
-  'apps_start': { id: 'apps_start', question: 'Qual aplicação está com problema?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
-  'password_start': { id: 'password_start', question: 'O usuário precisa de um reset de senha?', options: [{ text: 'Sim', nextNodeId: 'end_ticket_password' }, { text: 'Não', nextNodeId: 'end_ticket' }] },
-  'presential_start': { id: 'presential_start', question: 'Agendar atendimento presencial para qual localidade e horário?', options: [{ text: 'Agendar e Criar Ticket', nextNodeId: 'end_ticket' }] },
-  'event_start': { id: 'event_start', question: 'Qual equipamento precisa ser preparado para o evento?', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
-  'massive_start': { id: 'massive_start', question: 'Qual sistema ou serviço está fora do ar? Descreva o impacto.', options: [{ text: 'Criar Alerta Geral', nextNodeId: 'end_ticket_massive' }] },
-  'others_start': { id: 'others_start', question: 'Por favor, descreva o problema em detalhes.', options: [{ text: 'Criar Ticket', nextNodeId: 'end_ticket' }] },
+  // --- Atendimento a Alunos Flow ---
+  'aluno_start': {
+    id: 'aluno_start',
+    question: 'Qual o problema do aluno?',
+    options: [
+      { text: 'Perda de Senha (Portal/Email)', nextNodeId: 'perda_senha_start' },
+      { text: 'Problemas com Propinas/Pagamentos', nextNodeId: 'aluno_propinas_start' },
+      { text: 'Apoio a Ecrãs Táteis HyFlex/Webcams', nextNodeId: 'ecras_tateis_hyflex_start' },
+      { text: 'Problemas com Teams/Zoom', nextNodeId: 'bugs_software_universitario_start' },
+      { text: 'Outro', nextNodeId: 'aluno_outros' },
+    ],
+  },
+  'aluno_propinas_start': {
+    id: 'aluno_propinas_start',
+    question: 'O aluno não pagou as propinas ou tem dúvidas sobre pagamentos?',
+    options: [
+      { text: 'Não pagou propinas', nextNodeId: 'end_encaminhar_secretaria' },
+      { text: 'Dúvidas sobre pagamentos', nextNodeId: 'end_encaminhar_nucleo_aluno' },
+    ],
+  },
+  'aluno_outros': { id: 'aluno_outros', question: 'Por favor, descreva o problema do aluno.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
-  // --- End Nodes (expanded) ---
+  // --- Atendimento a Professores Flow ---
+  'professor_start': {
+    id: 'professor_start',
+    question: 'Qual o problema do professor?',
+    options: [
+      { text: 'Aulas/Chamadas não aparecem', nextNodeId: 'professor_planeamento_start' },
+      { text: 'Problemas com Teams/Zoom', nextNodeId: 'bugs_software_universitario_start' },
+      { text: 'Apoio a Ecrãs Táteis HyFlex/Webcams', nextNodeId: 'ecras_tateis_hyflex_start' },
+      { text: 'Software Académico (AutoCAD, SPSS, etc.)', nextNodeId: 'software_academico_start' },
+      { text: 'Outro', nextNodeId: 'professor_outros' },
+    ],
+  },
+  'professor_planeamento_start': {
+    id: 'professor_planeamento_start',
+    question: 'As aulas ou chamadas não aparecem no calendário ou plataforma?',
+    options: [
+      { text: 'Aulas não aparecem', nextNodeId: 'end_ticket_planeamento_aulas' },
+      { text: 'Chamadas não aparecem', nextNodeId: 'end_ticket_planeamento_chamadas' },
+    ],
+  },
+  'professor_outros': { id: 'professor_outros', question: 'Por favor, descreva o problema do professor.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+
+  // --- Atendimento a Staff Flow ---
+  'staff_start': {
+    id: 'staff_start',
+    question: 'Qual o problema do staff?',
+    options: [
+      { text: 'Perda de Senha (Email/Sistemas Internos)', nextNodeId: 'perda_senha_start' },
+      { text: 'Problemas com Office 365/Teams/Zoom', nextNodeId: 'bugs_software_universitario_start' },
+      { text: 'Apoio a Ecrãs Táteis HyFlex/Webcams', nextNodeId: 'ecras_tateis_hyflex_start' },
+      { text: 'Outro', nextNodeId: 'staff_outros' },
+    ],
+  },
+  'staff_outros': { id: 'staff_outros', question: 'Por favor, descreva o problema do staff.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+
+  // --- Software Académico Flow ---
+  'software_academico_start': {
+    id: 'software_academico_start',
+    question: 'Qual software académico está com problema?',
+    options: [
+      { text: 'AutoCAD', nextNodeId: 'end_ticket_software_autocad' },
+      { text: 'MAXQDA', nextNodeId: 'end_ticket_software_maxqda' },
+      { text: 'IBM SPSS', nextNodeId: 'end_ticket_software_spss' },
+      { text: 'Adobe Creative Cloud', nextNodeId: 'end_ticket_software_adobe' },
+      { text: 'Outro', nextNodeId: 'end_ticket_software_academico_geral' },
+    ],
+  },
+
+  // --- End Nodes (expanded and adjusted to European Portuguese) ---
   'end_success': { id: 'end_success', question: 'Problema resolvido com sucesso!', options: [] },
-  'end_ticket': { id: 'end_ticket', question: 'Ticket de suporte criado. A equipe técnica entrará em contato.', options: [] },
-  'end_ticket_password': { id: 'end_ticket_password', question: 'Ticket para reset de senha criado.', options: [] },
-  'end_ticket_power_supply': { id: 'end_ticket_power_supply', question: 'Ticket criado para verificação da fonte de alimentação.', options: [] },
-  'end_ticket_video_issue': { id: 'end_ticket_video_issue', question: 'Ticket criado para problema de vídeo.', options: [] },
-  'end_ticket_network_point': { id: 'end_ticket_network_point', question: 'Ticket criado para verificar ponto de rede e configurações.', options: [] },
+  'end_ticket': { id: 'end_ticket', question: 'Pedido de suporte criado. A equipa técnica entrará em contacto.', options: [] },
+  'end_ticket_password': { id: 'end_ticket_password', question: 'Pedido de suporte para reset de palavra-passe criado.', options: [] },
+  'end_ticket_fonte_problema': { id: 'end_ticket_fonte_problema', question: 'Pedido de suporte criado para verificação da fonte de alimentação.', options: [] },
+  'end_ticket_diagnostico_video': { id: 'end_ticket_diagnostico_video', question: 'Pedido de suporte criado para diagnóstico de problema de vídeo (placa/monitor).', options: [] },
+  'end_ticket_network_point': { id: 'end_ticket_network_point', question: 'Pedido de suporte criado para verificar ponto de rede e configurações.', options: [] },
   'end_ticket_massive': { id: 'end_ticket_massive', question: 'Alerta de problema massivo criado e enviado aos responsáveis.', options: [] },
-  'end_instruct_connect_cable': { id: 'end_instruct_connect_cable', question: 'Instrua o usuário a conectar o cabo firmemente. Se não resolver, crie um ticket.', options: [{ text: 'Problema Persiste, Criar Ticket', nextNodeId: 'end_ticket' }] },
-  'end_ticket_fonte_problema': { id: 'end_ticket_fonte_problema', question: 'Ticket criado para substituição/diagnóstico da fonte de alimentação.', options: [] },
-  'end_instruct_ligar_monitor': { id: 'end_instruct_ligar_monitor', question: 'Instrua o usuário a ligar o monitor. Se não resolver, crie um ticket.', options: [{ text: 'Problema Persiste, Criar Ticket', nextNodeId: 'end_ticket' }] },
-  'end_instruct_conectar_cabo_video': { id: 'end_instruct_conectar_cabo_video', question: 'Instrua o usuário a conectar o cabo de vídeo firmemente. Se não resolver, crie um ticket.', options: [{ text: 'Problema Persiste, Criar Ticket', nextNodeId: 'end_ticket' }] },
-  'end_ticket_diagnostico_video': { id: 'end_ticket_diagnostico_video', question: 'Ticket criado para diagnóstico de problema de vídeo (placa/monitor).', options: [] },
-  'end_ticket_problema_memoria': { id: 'end_ticket_problema_memoria', question: 'Ticket criado para diagnóstico de problema de memória RAM.', options: [] },
-  'end_ticket_diagnostico_hardware': { id: 'end_ticket_diagnostico_hardware', question: 'Ticket criado para diagnóstico geral de hardware.', options: [] },
-  'end_ticket_vpn': { id: 'end_ticket_vpn', question: 'Ticket criado para problema de conexão VPN.', options: [] },
-  'end_ticket_firewall': { id: 'end_ticket_firewall', question: 'Ticket criado para ajuste de regras de firewall.', options: [] },
-  'end_ticket_config_ip': { id: 'end_ticket_config_ip', question: 'Ticket criado para configuração de IP fixo.', options: [] },
-  'end_ticket_config_wifi': { id: 'end_ticket_config_wifi', question: 'Ticket criado para configuração de Wi-Fi.', options: [] },
-  'end_ticket_otimizacao_avancada': { id: 'end_ticket_otimizacao_avancada', question: 'Ticket criado para otimização avançada do sistema.', options: [] },
-  'end_instruct_otimizacao_basica': { id: 'end_instruct_otimizacao_basica', question: 'Instrua o usuário a realizar otimização básica. Se não resolver, crie um ticket.', options: [{ text: 'Problema Persiste, Criar Ticket', nextNodeId: 'end_ticket' }] },
-  'end_ticket_formatacao': { id: 'end_ticket_formatacao', question: 'Ticket criado para formatação e reinstalação do sistema.', options: [] },
-  'end_ticket_instalacao_software': { id: 'end_ticket_instalacao_software', question: 'Ticket criado para instalação de software.', options: [] },
-  'end_ticket_bug_office': { id: 'end_ticket_bug_office', question: 'Ticket criado para bug em software do pacote Office.', options: [] },
-  'end_ticket_bug_contabil': { id: 'end_ticket_bug_contabil', question: 'Ticket criado para bug em software contábil.', options: [] },
-  'end_ticket_bug_software': { id: 'end_ticket_bug_software', question: 'Ticket criado para bug em software específico.', options: [] },
-  'end_ticket_lgpd': { id: 'end_ticket_lgpd', question: 'Ticket criado para consulta sobre LGPD/Segurança da Informação.', options: [] },
+  'end_instruct_connect_cable': { id: 'end_instruct_connect_cable', question: 'Instrua o utilizador a ligar o cabo firmemente. Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_instruct_ligar_monitor': { id: 'end_instruct_ligar_monitor', question: 'Instrua o utilizador a ligar o monitor. Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_instruct_conectar_cabo_video': { id: 'end_instruct_conectar_cabo_video', question: 'Instrua o utilizador a ligar o cabo de vídeo firmemente. Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_ticket_problema_memoria': { id: 'end_ticket_problema_memoria', question: 'Pedido de suporte criado para diagnóstico de problema de memória RAM.', options: [] },
+  'end_ticket_diagnostico_hardware': { id: 'end_ticket_diagnostico_hardware', question: 'Pedido de suporte criado para diagnóstico geral de hardware.', options: [] },
+  'end_ticket_vpn': { id: 'end_ticket_vpn', question: 'Pedido de suporte criado para problema de conexão VPN.', options: [] },
+  'end_ticket_firewall': { id: 'end_ticket_firewall', question: 'Pedido de suporte criado para ajuste de regras de firewall.', options: [] },
+  'end_ticket_config_wifi': { id: 'end_ticket_config_wifi', question: 'Pedido de suporte criado para configuração de Wi-Fi.', options: [] },
+  'end_instruct_wifi_reset': { id: 'end_instruct_wifi_reset', question: 'Instrua o utilizador a reiniciar o dispositivo e esquecer/reconectar a rede Wi-Fi. Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_ticket_otimizacao_avancada': { id: 'end_ticket_otimizacao_avancada', question: 'Pedido de suporte criado para otimização avançada do sistema.', options: [] },
+  'end_instruct_otimizacao_basica': { id: 'end_instruct_otimizacao_basica', question: 'Instrua o utilizador a realizar otimização básica. Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_ticket_formatacao': { id: 'end_ticket_formatacao', question: 'Pedido de suporte criado para formatação e reinstalação do sistema.', options: [] },
+  'end_ticket_instalacao_software': { id: 'end_ticket_instalacao_software', question: 'Pedido de suporte criado para instalação de software.', options: [] },
+  'end_ticket_bug_office': { id: 'end_ticket_bug_office', question: 'Pedido de suporte criado para bug em software do pacote Office 365.', options: [] },
+  'end_ticket_bug_teams': { id: 'end_ticket_bug_teams', question: 'Pedido de suporte criado para problema com Microsoft Teams.', options: [] },
+  'end_ticket_bug_zoom': { id: 'end_ticket_bug_zoom', question: 'Pedido de suporte criado para problema com Zoom.', options: [] },
+  'end_ticket_bug_software': { id: 'end_ticket_bug_software', question: 'Pedido de suporte criado para bug em software específico.', options: [] },
+  'end_instruct_reset_senha_portal': { id: 'end_instruct_reset_senha_portal', question: 'Instrua o utilizador a usar a recuperação de palavra-passe do portal/email. Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_ticket_reset_senha_geral': { id: 'end_ticket_reset_senha_geral', question: 'Pedido de suporte criado para reset de palavra-passe de outro serviço.', options: [] },
+  'end_ticket_lgpd': { id: 'end_ticket_lgpd', question: 'Pedido de suporte criado para consulta sobre LGPD/Segurança da Informação.', options: [] },
   'end_ticket_ransomware': { id: 'end_ticket_ransomware', question: 'Alerta de segurança criado para possível ransomware.', options: [] },
-  'end_ticket_seguranca_senhas': { id: 'end_ticket_seguranca_senhas', question: 'Ticket criado para orientações de segurança de senhas.', options: [] },
-  'end_ticket_impressora': { id: 'end_ticket_impressora', question: 'Ticket criado para problema de impressora.', options: [] },
-  'end_instruct_ligar_impressora': { id: 'end_instruct_ligar_impressora', question: 'Instrua o usuário a ligar a impressora e verificar conexões. Se não resolver, crie um ticket.', options: [{ text: 'Problema Persiste, Criar Ticket', nextNodeId: 'end_ticket' }] },
-  'end_ticket_periferico': { id: 'end_ticket_periferico', question: 'Ticket criado para problema de periférico/dispositivo.', options: [] },
-  'end_ticket_energia': { id: 'end_ticket_energia', question: 'Ticket criado para problema com estabilizador/nobreak.', options: [] },
-  'end_ticket_eletrica': { id: 'end_ticket_eletrica', question: 'Ticket criado para problema de fiação elétrica/tomada.', options: [] },
-  'end_ticket_suporte': { id: 'end_ticket_suporte', question: 'Ticket criado para dúvida sobre processo de suporte.', options: [] },
+  'end_ticket_impressora': { id: 'end_ticket_impressora', question: 'Pedido de suporte criado para problema de impressora.', options: [] },
+  'end_ticket_impressora_diagnostico': { id: 'end_ticket_impressora_diagnostico', question: 'Pedido de suporte criado para diagnóstico de impressora.', options: [] },
+  'end_instruct_ligar_impressora': { id: 'end_instruct_ligar_impressora', question: 'Instrua o utilizador a ligar a impressora e verificar conexões. Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_instruct_trocar_toner': { id: 'end_instruct_trocar_toner', question: 'Instrua o utilizador a trocar o toner/cartucho. Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_ticket_solicitar_toner': { id: 'end_ticket_solicitar_toner', question: 'Pedido de suporte criado para solicitação de toner/cartucho.', options: [] },
+  'end_ticket_periferico': { id: 'end_ticket_periferico', question: 'Pedido de suporte criado para problema de periférico/dispositivo.', options: [] },
+  'end_ticket_ecra_tatil_toque': { id: 'end_ticket_ecra_tatil_toque', question: 'Pedido de suporte criado para ecrã tátil HyFlex sem resposta ao toque.', options: [] },
+  'end_ticket_ecra_tatil_imagem': { id: 'end_ticket_ecra_tatil_imagem', question: 'Pedido de suporte criado para ecrã tátil HyFlex sem imagem.', options: [] },
+  'end_kb_hyflex_guide': { id: 'end_kb_hyflex_guide', question: 'Redirecionando para a Base de Conhecimento: Guia de Utilização HyFlex.', options: [] },
+  'end_ticket_webcam_nao_funciona': { id: 'end_ticket_webcam_nao_funciona', question: 'Pedido de suporte criado para webcam que não funciona.', options: [] },
+  'end_ticket_webcam_problema_imagem': { id: 'end_ticket_webcam_problema_imagem', question: 'Pedido de suporte criado para problema de imagem/áudio da webcam.', options: [] },
+  'end_ticket_energia': { id: 'end_ticket_energia', question: 'Pedido de suporte criado para problema com estabilizador/nobreak.', options: [] },
+  'end_ticket_eletrica': { id: 'end_ticket_eletrica', question: 'Pedido de suporte criado para problema de fiação elétrica/tomada.', options: [] },
+  'end_ticket_suporte': { id: 'end_ticket_suporte', question: 'Pedido de suporte criado para dúvida sobre processo de suporte.', options: [] },
   'end_kb_redirect': { id: 'end_kb_redirect', question: 'Redirecionando para a Base de Conhecimento para ferramentas.', options: [] },
-  'end_ticket_manutencao_avancada': { id: 'end_ticket_manutencao_avancada', question: 'Ticket criado para manutenção avançada.', options: [] },
+  'end_ticket_manutencao_avancada': { id: 'end_ticket_manutencao_avancada', question: 'Pedido de suporte criado para manutenção avançada.', options: [] },
   'end_escalar_tecnico': { id: 'end_escalar_tecnico', question: 'Atendimento escalado para técnico especializado/grupo de TI.', options: [] },
+  'end_encaminhar_secretaria': { id: 'end_encaminhar_secretaria', question: 'Encaminhar aluno para a Secretaria para questões de propinas.', options: [] },
+  'end_encaminhar_nucleo_aluno': { id: 'end_encaminhar_nucleo_aluno', question: 'Encaminhar aluno para o Núcleo de Atendimento ao Aluno para dúvidas de pagamento.', options: [] },
+  'end_ticket_planeamento_aulas': { id: 'end_ticket_planeamento_aulas', question: 'Pedido de suporte criado para aulas não visíveis no planeamento.', options: [] },
+  'end_ticket_planeamento_chamadas': { id: 'end_ticket_planeamento_chamadas', question: 'Pedido de suporte criado para chamadas não visíveis no planeamento.', options: [] },
+  'end_ticket_software_autocad': { id: 'end_ticket_software_autocad', question: 'Pedido de suporte criado para problema com AutoCAD.', options: [] },
+  'end_ticket_software_maxqda': { id: 'end_ticket_software_maxqda', question: 'Pedido de suporte criado para problema com MAXQDA.', options: [] },
+  'end_ticket_software_spss': { id: 'end_ticket_software_spss', question: 'Pedido de suporte criado para problema com IBM SPSS.', options: [] },
+  'end_ticket_software_adobe': { id: 'end_ticket_software_adobe', question: 'Pedido de suporte criado para problema com Adobe Creative Cloud.', options: [] },
+  'end_ticket_software_academico_geral': { id: 'end_ticket_software_academico_geral', question: 'Pedido de suporte criado para problema com software académico específico.', options: [] },
   // New end nodes for direct actions
   'action_create_task': { id: 'action_create_task', question: 'Criar uma nova tarefa?', options: [] },
   'action_add_knowledge': { id: 'action_add_knowledge', question: 'Adicionar conhecimento à Base de Conhecimento?', options: [] },

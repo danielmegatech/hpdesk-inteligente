@@ -9,7 +9,7 @@ interface Settings {
 const defaultSettings: Settings = {
   workStartTime: '09:00',
   workEndTime: '18:00',
-  breakMinutes: 60,
+  breakMinutes: 60, // Default to 60 minutes as requested
 };
 
 export const useSettings = () => {
