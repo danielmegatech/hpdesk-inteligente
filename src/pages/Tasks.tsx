@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { CalendarIcon, Edit, MoreVertical, PlusCircle, Trash2, History, RotateCcw } from 'lucide-react';
+import { CalendarIcon, Edit, MoreVertical, PlusCircle, Trash2, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -11,10 +11,9 @@ import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TaskForm, { Task } from '@/components/TaskForm';
-import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetTrashedTasks, apiRestoreTask, apiPermanentDeleteTask } from '@/api';
-import { Calendar } from '@/components/ui/calendar';
-import { toast } from 'sonner';
+import TaskForm, { Task } from '@/components/TaskForm'; // Import TaskForm and Task type
+import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask } from '@/api'; // Import mock API
+import { Calendar } from '@/components/ui/calendar'; // Importando Calendar
 
 // --- TYPES AND SCHEMA ---
 const taskStatusMap = {
@@ -35,18 +34,11 @@ const statusColorMap: Record<TaskStatus, string> = {
 };
 
 // --- COMPONENTS ---
-const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanentDelete, isTrashed = false }: { 
-  task: Task; 
-  onEdit: () => void; 
-  onDelete: () => void; 
-  onShowHistory: () => void; 
-  onRestore?: () => void; 
-  onPermanentDelete?: () => void;
-  isTrashed?: boolean;
-}) => {
+const TaskCard = ({ task, onEdit, onDelete, onShowHistory }: { task: Task; onEdit: () => void; onDelete: () => void; onShowHistory: () => void; }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   
+  const lastHistoryEntry = task.history[task.history.length - 1];
   const timestampTitle = `Criado: ${format(task.createdAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` +
                          `Última atualização: ${format(task.updatedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` +
                          (task.completedAt ? `Concluído: ${format(task.completedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` : '') +
@@ -58,19 +50,9 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanen
         <div className="flex justify-between items-start"><h4 className="font-semibold mb-2">{task.title}</h4>
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
             <DropdownMenuContent>
-              {!isTrashed && (
-                <>
-                  <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
-                  <DropdownMenuItem onClick={onShowHistory}><History className="mr-2 h-4 w-4" /> Histórico</DropdownMenuItem>
-                  <DropdownMenuItem onClick={onDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Mover para Lixeira</DropdownMenuItem>
-                </>
-              )}
-              {isTrashed && (
-                <>
-                  <DropdownMenuItem onClick={onRestore}><RotateCcw className="mr-2 h-4 w-4" /> Restaurar</DropdownMenuItem>
-                  <DropdownMenuItem onClick={onPermanentDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Excluir Permanentemente</DropdownMenuItem>
-                </>
-              )}
+              <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
+              <DropdownMenuItem onClick={onShowHistory}><History className="mr-2 h-4 w-4" /> Histórico</DropdownMenuItem>
+              <DropdownMenuItem onClick={onDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -98,67 +80,35 @@ const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory }: { stat
 
 const TasksPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [trashedTasks, setTrashedTasks] = useState<Task[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState('kanban');
-
-  const fetchTasks = async () => {
-    const fetchedTasks = await apiGetTasks();
-    setTasks(fetchedTasks);
-  };
-
-  const fetchTrashedTasks = async () => {
-    const fetchedTrashedTasks = await apiGetTrashedTasks();
-    setTrashedTasks(fetchedTrashedTasks);
-  };
 
   useEffect(() => {
-    fetchTasks();
-    fetchTrashedTasks();
+    setTasks(apiGetTasks());
   }, []);
 
-  const handleSaveTask = async (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
+  const handleSaveTask = (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
     if (selectedTask) { // Edit
       const updatedTask = { ...selectedTask, ...data };
-      await apiUpdateTask(updatedTask);
-      toast.success(`Tarefa "${updatedTask.title}" atualizada com sucesso!`);
+      apiUpdateTask(updatedTask);
     } else { // Add
-      const newTask = await apiAddTask(data);
-      if (newTask) {
-        toast.success(`Tarefa "${newTask.title}" criada com sucesso!`);
-      }
+      apiAddTask(data);
     }
-    fetchTasks(); // Refresh tasks from API
+    setTasks(apiGetTasks()); // Refresh tasks from API
     setSelectedTask(undefined);
   };
 
-  const handleDeleteTask = async (taskToDelete: Task) => {
-    await apiDeleteTask(taskToDelete.id); // Moves to trash
-    toast.info(`Tarefa "${taskToDelete.title}" movida para a lixeira.`);
-    fetchTasks();
-    fetchTrashedTasks();
-  };
-
-  const handleRestoreTask = async (taskToRestore: Task) => {
-    await apiRestoreTask(taskToRestore.id);
-    toast.success(`Tarefa "${taskToRestore.title}" restaurada.`);
-    fetchTasks();
-    fetchTrashedTasks();
-  };
-
-  const handlePermanentDeleteTask = async (taskToPermanentDelete: Task) => {
-    await apiPermanentDeleteTask(taskToPermanentDelete.id);
-    toast.success(`Tarefa "${taskToPermanentDelete.title}" excluída permanentemente.`);
-    fetchTrashedTasks();
+  const handleDeleteTask = (taskToDelete: Task) => {
+    apiDeleteTask(taskToDelete.id);
+    setTasks(apiGetTasks()); // Refresh tasks from API
   };
 
   const handleOpenEdit = (task: Task) => { setSelectedTask(task); setIsFormOpen(true); };
   const handleOpenAdd = () => { setSelectedTask(undefined); setIsFormOpen(true); };
   const handleShowHistory = (task: Task) => { setSelectedTask(task); setIsHistoryOpen(true); };
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
     const activeId = active.id as string;
@@ -171,9 +121,8 @@ const TasksPage = () => {
     if (!overContainer || activeTask.status === overContainer) return;
 
     const updatedTask = { ...activeTask, status: overContainer };
-    await apiUpdateTask(updatedTask); // Update via API
-    toast.info(`Tarefa "${updatedTask.title}" movida para "${taskStatusMap[updatedTask.status]}".`);
-    fetchTasks(); // Refresh tasks from API
+    apiUpdateTask(updatedTask); // Update via API
+    setTasks(apiGetTasks()); // Refresh tasks from API
   };
 
   const tasksByStatus = (status: TaskStatus) => tasks.filter(t => t.status === status);
@@ -187,16 +136,15 @@ const TasksPage = () => {
         </Dialog>
         <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}><DialogContent>
           <DialogHeader><DialogTitle>Histórico da Tarefa</DialogTitle><DialogDescription>{selectedTask?.title}</DialogDescription></DialogHeader>
-          {/* History from Supabase would require a separate table/query. For now, this is mock data. */}
           <ul className="space-y-2">{selectedTask?.history.map((h, i) => <li key={i} className="text-sm"><strong>{taskStatusMap[h.status]}:</strong> {format(h.timestamp, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</li>).reverse()}</ul>
         </DialogContent></Dialog>
       </div>
-      <Tabs defaultValue="kanban" onValueChange={setActiveTab}>
-        <TabsList><TabsTrigger value="kanban">Kanban</TabsTrigger><TabsTrigger value="calendar">Calendário</TabsTrigger><TabsTrigger value="trash">Lixeira</TabsTrigger></TabsList>
+      <Tabs defaultValue="kanban">
+        <TabsList><TabsTrigger value="kanban">Kanban</TabsTrigger><TabsTrigger value="calendar">Calendário</TabsTrigger></TabsList>
         <TabsContent value="kanban">
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <div className="flex flex-col md:flex-row gap-6 mt-4">
-              {(Object.keys(taskStatusMap) as TaskStatus[]).filter(status => status !== 'lixeira').map(status => (
+              {(Object.keys(taskStatusMap) as TaskStatus[]).map(status => (
                 <KanbanColumn key={status} status={status} tasks={tasksByStatus(status)} onEdit={handleOpenEdit} onDelete={handleDeleteTask} onShowHistory={handleShowHistory} />
               ))}
             </div>
@@ -216,28 +164,6 @@ const TasksPage = () => {
               );
             }}}
           /></CardContent></Card>
-        </TabsContent>
-        <TabsContent value="trash">
-          <div className="mt-4 space-y-3">
-            {trashedTasks.length === 0 ? (
-              <p className="text-muted-foreground text-center p-8">A lixeira está vazia.</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {trashedTasks.map(task => (
-                  <TaskCard 
-                    key={task.id} 
-                    task={task} 
-                    onEdit={() => { /* No edit in trash */ }} 
-                    onDelete={() => { /* No delete in trash */ }} 
-                    onShowHistory={() => handleShowHistory(task)} 
-                    onRestore={() => handleRestoreTask(task)}
-                    onPermanentDelete={() => handlePermanentDeleteTask(task)}
-                    isTrashed={true}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
         </TabsContent>
       </Tabs>
     </div>

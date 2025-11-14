@@ -7,10 +7,7 @@ const getTasks = (): Task[] => {
   const storedTasks = localStorage.getItem('mockTasks');
   return storedTasks ? JSON.parse(storedTasks).map((task: any) => ({
     ...task,
-    deadline: task.deadline ? new Date(task.deadline) : undefined, // Convert deadline to Date
-    createdAt: new Date(task.createdAt), // Convert createdAt to Date
-    updatedAt: new Date(task.updatedAt), // Convert updatedAt to Date
-    completedAt: task.completedAt ? new Date(task.completedAt) : undefined, // Convert completedAt to Date
+    deadline: task.deadline ? new Date(task.deadline) : undefined,
     history: task.history.map((h: any) => ({ ...h, timestamp: new Date(h.timestamp) })),
   })) : [];
 };

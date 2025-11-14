@@ -17,8 +17,7 @@ type ServiceState = 'idle' | 'selecting_category' | 'in_flow';
 const ServicePage = () => {
   const [state, setState] = useState<ServiceState>('idle');
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
-  const [history, setHistory] = useState<MindmapNode[]>([]
-);
+  const [history, setHistory] = useState<MindmapNode[]>([]);
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [isAddKnowledgeOpen, setIsAddKnowledgeOpen] = useState(false);
   const [activeServiceStatus, setActiveServiceStatus] = useState<'active' | 'resolved' | 'escalated'>('active');
@@ -140,7 +139,6 @@ const ServicePage = () => {
     const startNodeId = categories.find(cat => cat.id === categoryId)?.startNodeId;
     if (!startNodeId) return '';
     const startNode = mindmapData[startNodeId];
-    if (!startNode) return ''; // Added check here
     return startNode.options.map(opt => opt.text).join(', ');
   };
 
