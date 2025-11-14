@@ -13,6 +13,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TaskForm, { Task } from '@/components/TaskForm'; // Import TaskForm and Task type
 import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask } from '@/api'; // Import mock API
+import { Calendar } from '@/components/ui/calendar'; // Importando Calendar
 
 // --- TYPES AND SCHEMA ---
 const taskStatusMap = {
