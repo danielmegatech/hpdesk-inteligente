@@ -24,6 +24,10 @@ const ServicePage = () => {
   const [escalatedResolver, setEscalatedResolver] = useState<string | undefined>(undefined);
   const [kbSuggestions, setKbSuggestions] = useState<Article[]>([]);
 
+  // State for initial form data when triggered from Service page
+  const [initialTaskTitle, setInitialTaskTitle] = useState<string | undefined>(undefined);
+  const [initialArticleTitle, setInitialArticleTitle] = useState<string | undefined>(undefined);
+
 
   const handleStartService = () => {
     setState('selecting_category');
@@ -32,6 +36,8 @@ const ServicePage = () => {
     setActiveServiceStatus('active');
     setEscalatedResolver(undefined);
     setKbSuggestions([]);
+    setInitialTaskTitle(undefined);
+    setInitialArticleTitle(undefined);
   };
 
   const handleCategorySelect = (startNodeId: string) => {
@@ -41,6 +47,8 @@ const ServicePage = () => {
     setState('in_flow');
     setActiveServiceStatus('active');
     setKbSuggestions([]);
+    setInitialTaskTitle(undefined);
+    setInitialArticleTitle(undefined);
   };
   
   const handleReset = () => {
@@ -50,6 +58,8 @@ const ServicePage = () => {
     setActiveServiceStatus('resolved'); // Mark as resolved when resetting
     setEscalatedResolver(undefined);
     setKbSuggestions([]);
+    setInitialTaskTitle(undefined);
+    setInitialArticleTitle(undefined);
   }
 
   const handleBack = () => {
@@ -115,12 +125,14 @@ const ServicePage = () => {
     apiAddTask(data);
     toast.success(`Tarefa "${data.title}" criada com sucesso!`);
     setIsAddTaskOpen(false);
+    setInitialTaskTitle(undefined); // Clear after saving
   };
 
   const handleSaveNewArticle = (data: Omit<Article, 'id'>) => {
     apiAddArticle(data);
     toast.success(`Artigo "${data.title}" adicionado à Base de Conhecimento!`);
     setIsAddKnowledgeOpen(false);
+    setInitialArticleTitle(undefined); // Clear after saving
   };
 
   const getCategorySubthemes = (categoryId: string) => {
@@ -128,6 +140,20 @@ const ServicePage = () => {
     if (!startNodeId) return '';
     const startNode = mindmapData[startNodeId];
     return startNode.options.map(opt => opt.text).join(', ');
+  };
+
+  const handleOpenAddTask = () => {
+    if (currentNodeId) {
+      setInitialTaskTitle(mindmapData[currentNodeId].question);
+    }
+    setIsAddTaskOpen(true);
+  };
+
+  const handleOpenAddKnowledge = () => {
+    if (currentNodeId) {
+      setInitialArticleTitle(mindmapData[currentNodeId].question);
+    }
+    setIsAddKnowledgeOpen(true);
   };
 
   const renderContent = () => {
@@ -182,10 +208,10 @@ const ServicePage = () => {
               />
             )}
             <div className="flex justify-center space-x-4 mt-8">
-              <Button variant="outline" onClick={() => setIsAddTaskOpen(true)}>
+              <Button variant="outline" onClick={handleOpenAddTask}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Criar Tarefa
               </Button>
-              <Button variant="outline" onClick={() => setIsAddKnowledgeOpen(true)}>
+              <Button variant="outline" onClick={handleOpenAddKnowledge}>
                 <BookOpen className="mr-2 h-4 w-4" /> Adicionar Conhecimento
               </Button>
             </div>
@@ -219,14 +245,22 @@ const ServicePage = () => {
       <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Criar Nova Tarefa</DialogTitle></DialogHeader>
-          <TaskForm onSave={handleSaveNewTask} onOpenChange={setIsAddTaskOpen} />
+          <TaskForm 
+            task={initialTaskTitle ? { title: initialTaskTitle, description: '', status: 'novo', location: '', time: '' } : undefined} 
+            onSave={handleSaveNewTask} 
+            onOpenChange={setIsAddTaskOpen} 
+          />
         </DialogContent>
       </Dialog>
 
       <Dialog open={isAddKnowledgeOpen} onOpenChange={setIsAddKnowledgeOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Adicionar Novo Artigo à Base de Conhecimento</DialogTitle></DialogHeader>
-          <ArticleForm onSave={handleSaveNewArticle} onOpenChange={setIsAddKnowledgeOpen} />
+          <ArticleForm 
+            article={initialArticleTitle ? { title: initialArticleTitle, content: '', category: '' } : undefined} 
+            onSave={handleSaveNewArticle} 
+            onOpenChange={setIsAddKnowledgeOpen} 
+          />
         </DialogContent>
       </Dialog>
     </div>

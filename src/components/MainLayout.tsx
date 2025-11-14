@@ -11,7 +11,7 @@ import { Task } from '@/components/TaskForm'; // Import Task type
 import { formatDistanceToNow } from 'date-fns'; // Import formatDistanceToNow
 import { ptBR } from 'date-fns/locale'; // Import ptBR locale
 import NotificationBell from './NotificationBell'; // Import NotificationBell
-import { apiGetTasks, apiAddNotification } from '@/api'; // Import mock API
+import { apiGetTasks, apiAddNotification, apiAddTask, apiAddArticle } from '@/api'; // Import mock API e as funções em falta
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Importando componentes Dialog
 import TaskForm from '@/components/TaskForm'; // Importando TaskForm
 import ArticleForm from '@/components/ArticleForm'; // Importando ArticleForm
