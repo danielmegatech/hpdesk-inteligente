@@ -287,19 +287,60 @@ export const mindmapData: Record<string, MindmapNode> = {
     id: 'aluno_start',
     question: 'Qual o problema do aluno?',
     options: [
-      { text: 'Perda de Senha (Portal/Email)', nextNodeId: 'perda_senha_start' },
+      { text: 'Perda de Senha (Portal/Email)', nextNodeId: 'aluno_perda_senha_start' },
       { text: 'Problemas com Propinas/Pagamentos', nextNodeId: 'aluno_propinas_start' },
       { text: 'Apoio a Ecrãs Táteis HyFlex/Webcams', nextNodeId: 'ecras_tateis_hyflex_start' },
       { text: 'Problemas com Teams/Zoom', nextNodeId: 'bugs_software_universitario_start' },
       { text: 'Outro', nextNodeId: 'aluno_outros' },
     ],
   },
+  'aluno_perda_senha_start': {
+    id: 'aluno_perda_senha_start',
+    question: 'Qual o domínio do email do aluno? (ex: @campus.pt, @iade.pt)',
+    options: [
+      { text: '@campus.pt ou @iade.pt', nextNodeId: 'aluno_senha_portal_canvas' },
+      { text: 'Outro domínio', nextNodeId: 'end_ticket_reset_senha_geral' },
+    ],
+  },
+  'aluno_senha_portal_canvas': {
+    id: 'aluno_senha_portal_canvas',
+    question: 'O aluno consegue aceder a password.europeia.pt?',
+    options: [
+      { text: 'Sim', nextNodeId: 'end_instruct_reset_senha_portal' },
+      { text: 'Não', nextNodeId: 'aluno_senha_manual' },
+    ],
+  },
+  'aluno_senha_manual': {
+    id: 'aluno_senha_manual',
+    question: 'É necessário criar uma nova palavra-passe manualmente?',
+    options: [
+      { text: 'Sim', nextNodeId: 'end_ticket_reset_senha_manual' },
+      { text: 'Não', nextNodeId: 'end_ticket_reset_senha_portal' }, // Re-attempt portal guidance
+    ],
+  },
   'aluno_propinas_start': {
     id: 'aluno_propinas_start',
     question: 'O aluno não pagou as propinas ou tem dúvidas sobre pagamentos?',
     options: [
-      { text: 'Não pagou propinas', nextNodeId: 'end_encaminhar_secretaria' },
+      { text: 'Não pagou propinas', nextNodeId: 'aluno_propinas_sistema112' },
       { text: 'Dúvidas sobre pagamentos', nextNodeId: 'end_encaminhar_nucleo_aluno' },
+    ],
+  },
+  'aluno_propinas_sistema112': {
+    id: 'aluno_propinas_sistema112',
+    question: 'Verificou o estado da propina no Sistema 112?',
+    options: [
+      { text: 'Sim, está paga', nextNodeId: 'aluno_propinas_acesso_ok' },
+      { text: 'Sim, está em dívida', nextNodeId: 'end_encaminhar_secretaria_bloqueado' },
+      { text: 'Não verifiquei', nextNodeId: 'end_instruct_verificar_sistema112' },
+    ],
+  },
+  'aluno_propinas_acesso_ok': {
+    id: 'aluno_propinas_acesso_ok',
+    question: 'Mesmo com propina paga, o aluno não tem acesso? (Encaminhar para password.europeia.pt)',
+    options: [
+      { text: 'Sim, sem acesso', nextNodeId: 'aluno_senha_portal_canvas' }, // Reutiliza fluxo de senha
+      { text: 'Não, acesso OK', nextNodeId: 'end_success' },
     ],
   },
   'aluno_outros': { id: 'aluno_outros', question: 'Por favor, descreva o problema do aluno.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
@@ -331,10 +372,43 @@ export const mindmapData: Record<string, MindmapNode> = {
     id: 'staff_start',
     question: 'Qual o problema do staff?',
     options: [
-      { text: 'Perda de Senha (Email/Sistemas Internos)', nextNodeId: 'perda_senha_start' },
+      { text: 'Perda de Senha (Email/Sistemas Internos)', nextNodeId: 'staff_perda_senha_start' },
       { text: 'Problemas com Office 365/Teams/Zoom', nextNodeId: 'bugs_software_universitario_start' },
       { text: 'Apoio a Ecrãs Táteis HyFlex/Webcams', nextNodeId: 'ecras_tateis_hyflex_start' },
       { text: 'Outro', nextNodeId: 'staff_outros' },
+    ],
+  },
+  'staff_perda_senha_start': {
+    id: 'staff_perda_senha_start',
+    question: 'Qual o domínio do email do staff? (ex: @universidadeeuropeia.pt, @ext.universidadeeuropeia.pt)',
+    options: [
+      { text: '@universidadeeuropeia.pt', nextNodeId: 'staff_senha_portal' },
+      { text: '@ext.universidadeeuropeia.pt', nextNodeId: 'staff_senha_externo' },
+      { text: 'Outro domínio', nextNodeId: 'end_ticket_reset_senha_geral' },
+    ],
+  },
+  'staff_senha_portal': {
+    id: 'staff_senha_portal',
+    question: 'O staff consegue aceder a password.europeia.pt?',
+    options: [
+      { text: 'Sim', nextNodeId: 'end_instruct_reset_senha_portal' },
+      { text: 'Não', nextNodeId: 'staff_senha_manual' },
+    ],
+  },
+  'staff_senha_externo': {
+    id: 'staff_senha_externo',
+    question: 'O problema é com a palavra-passe externa ou de sistemas internos?',
+    options: [
+      { text: 'Palavra-passe externa', nextNodeId: 'end_ticket_reset_senha_externa' },
+      { text: 'Sistemas internos', nextNodeId: 'staff_senha_manual' },
+    ],
+  },
+  'staff_senha_manual': {
+    id: 'staff_senha_manual',
+    question: 'É necessário criar uma nova palavra-passe manualmente?',
+    options: [
+      { text: 'Sim', nextNodeId: 'end_ticket_reset_senha_manual' },
+      { text: 'Não', nextNodeId: 'end_ticket_reset_senha_portal' }, // Re-attempt portal guidance
     ],
   },
   'staff_outros': { id: 'staff_outros', question: 'Por favor, descreva o problema do staff.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
@@ -377,8 +451,10 @@ export const mindmapData: Record<string, MindmapNode> = {
   'end_ticket_bug_teams': { id: 'end_ticket_bug_teams', question: 'Pedido de suporte criado para problema com Microsoft Teams.', options: [] },
   'end_ticket_bug_zoom': { id: 'end_ticket_bug_zoom', question: 'Pedido de suporte criado para problema com Zoom.', options: [] },
   'end_ticket_bug_software': { id: 'end_ticket_bug_software', question: 'Pedido de suporte criado para bug em software específico.', options: [] },
-  'end_instruct_reset_senha_portal': { id: 'end_instruct_reset_senha_portal', question: 'Instrua o utilizador a usar a recuperação de palavra-passe do portal/email. Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_instruct_reset_senha_portal': { id: 'end_instruct_reset_senha_portal', question: 'Instrua o utilizador a usar a recuperação de palavra-passe do portal/email (password.europeia.pt). Se não resolver, crie um pedido de suporte.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
   'end_ticket_reset_senha_geral': { id: 'end_ticket_reset_senha_geral', question: 'Pedido de suporte criado para reset de palavra-passe de outro serviço.', options: [] },
+  'end_ticket_reset_senha_manual': { id: 'end_ticket_reset_senha_manual', question: 'Pedido de suporte criado para criação manual de palavra-passe.', options: [] },
+  'end_ticket_reset_senha_externa': { id: 'end_ticket_reset_senha_externa', question: 'Pedido de suporte criado para palavra-passe externa.', options: [] },
   'end_ticket_lgpd': { id: 'end_ticket_lgpd', question: 'Pedido de suporte criado para consulta sobre LGPD/Segurança da Informação.', options: [] },
   'end_ticket_ransomware': { id: 'end_ticket_ransomware', question: 'Alerta de segurança criado para possível ransomware.', options: [] },
   'end_ticket_impressora': { id: 'end_ticket_impressora', question: 'Pedido de suporte criado para problema de impressora.', options: [] },
@@ -399,6 +475,8 @@ export const mindmapData: Record<string, MindmapNode> = {
   'end_ticket_manutencao_avancada': { id: 'end_ticket_manutencao_avancada', question: 'Pedido de suporte criado para manutenção avançada.', options: [] },
   'end_escalar_tecnico': { id: 'end_escalar_tecnico', question: 'Atendimento escalado para técnico especializado/grupo de TI.', options: [] },
   'end_encaminhar_secretaria': { id: 'end_encaminhar_secretaria', question: 'Encaminhar aluno para a Secretaria para questões de propinas.', options: [] },
+  'end_encaminhar_secretaria_bloqueado': { id: 'end_encaminhar_secretaria_bloqueado', question: 'Aluno com propina em dívida. Encaminhar para a Secretaria.', options: [] },
+  'end_instruct_verificar_sistema112': { id: 'end_instruct_verificar_sistema112', question: 'Instrua o utilizador a verificar o estado da propina no Sistema 112.', options: [{ text: 'Verificado, problema persiste', nextNodeId: 'aluno_propinas_sistema112' }] },
   'end_encaminhar_nucleo_aluno': { id: 'end_encaminhar_nucleo_aluno', question: 'Encaminhar aluno para o Núcleo de Atendimento ao Aluno para dúvidas de pagamento.', options: [] },
   'end_ticket_planeamento_aulas': { id: 'end_ticket_planeamento_aulas', question: 'Pedido de suporte criado para aulas não visíveis no planeamento.', options: [] },
   'end_ticket_planeamento_chamadas': { id: 'end_ticket_planeamento_chamadas', question: 'Pedido de suporte criado para chamadas não visíveis no planeamento.', options: [] },

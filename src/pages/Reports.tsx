@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PossibilityTree from '@/components/PossibilityTree';
-import { possibilityTreeData, reportMetrics } from '@/data/reportsData';
+import { possibilityTreeData } from '@/data/reportsData'; // Keep possibilityTreeData
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle, AlertTriangle, BookOpen } from 'lucide-react'; // Adicionando importações dos ícones
+import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { apiGetReportMetrics } from '@/api'; // Import mock API for reports
 
-const StatCard = ({ title, value, change, icon: Icon }: typeof reportMetrics[0]) => (
+const StatCard = ({ title, value, change, icon: Icon }: { title: string; value: string; change: string; icon: React.ElementType }) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -13,29 +15,17 @@ const StatCard = ({ title, value, change, icon: Icon }: typeof reportMetrics[0])
     </CardHeader>
     <CardContent>
       <div className="text-2xl font-bold">{value}</div>
-      <p className="text-xs text-muted-foreground">{change} em relação a ontem</p>
+      <p className="text-xs text-muted-foreground">{change}</p>
     </CardContent>
   </Card>
 );
 
 const ReportsPage = () => {
-  // Simulated data for additional metrics
-  const simulatedTasks = [
-    { id: 't1', status: 'concluido', resolutionTime: 30, category: 'Rede', completedAt: new Date(Date.now() - 3600000) },
-    { id: 't2', status: 'concluido', resolutionTime: 60, category: 'Hardware', completedAt: new Date(Date.now() - 7200000) },
-    { id: 't3', status: 'emAndamento', category: 'Software' },
-    { id: 't4', status: 'concluido', resolutionTime: 45, category: 'Rede', completedAt: new Date(Date.now() - 1800000) },
-  ];
+  const [metrics, setMetrics] = useState<any[]>([]);
 
-  const tasksConcludedToday = simulatedTasks.filter(t => t.status === 'concluido' && t.completedAt && formatDistanceToNow(t.completedAt, { addSuffix: false, locale: ptBR }).includes('horas')).length;
-  const avgResolutionTime = simulatedTasks.filter(t => t.status === 'concluido' && t.resolutionTime).reduce((sum, t) => sum + t.resolutionTime!, 0) / tasksConcludedToday || 0;
-
-  const additionalMetrics = [
-    { title: 'Tarefas Concluídas Hoje', value: tasksConcludedToday.toString(), change: '+3', icon: CheckCircle },
-    { title: 'Tempo Médio de Resolução (Geral)', value: `${Math.round(avgResolutionTime)} min`, change: '-10 min', icon: CheckCircle },
-    { title: 'Tickets Escalados (Semana)', value: '5', change: '+1', icon: AlertTriangle },
-    { title: 'Artigos KB Adicionados (Mês)', value: '12', change: '+2', icon: BookOpen },
-  ];
+  useEffect(() => {
+    setMetrics(apiGetReportMetrics());
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-start h-full w-full gap-8">
@@ -47,8 +37,7 @@ const ReportsPage = () => {
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full">
-        {reportMetrics.map(metric => <StatCard key={metric.title} {...metric} />)}
-        {additionalMetrics.map(metric => <StatCard key={metric.title} {...metric} />)}
+        {metrics.map(metric => <StatCard key={metric.title} {...metric} />)}
       </div>
 
       <Card className="w-full">
@@ -61,7 +50,7 @@ const ReportsPage = () => {
         </CardContent>
       </Card>
       <p className="text-sm text-muted-foreground w-full text-left">
-        <strong className="text-primary">Nota:</strong> As métricas acima são simuladas. Para dados em tempo real, seria necessária uma integração com um sistema de gerenciamento de tarefas e um backend.
+        <strong className="text-primary">Nota:</strong> As métricas acima são geradas por um sistema simulado (mock API) para demonstração. Em um ambiente real, seriam conectadas a um backend de gestão de tarefas.
       </p>
     </div>
   );

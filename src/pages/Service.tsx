@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import MindmapFlow from '@/components/MindmapFlow';
 import MindmapHistory from '@/components/MindmapHistory';
@@ -6,12 +6,11 @@ import { mindmapData, categories, MindmapNode } from '@/data/mindmap';
 import { PlayCircle, PlusCircle, BookOpen } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import TaskForm from '@/components/TaskForm'; // Corrected import path
-import ArticleForm from '@/components/ArticleForm'; // Corrected import path
-import { Task } from '@/components/TaskForm'; // Import Task type from its new location
-import { Article } from '@/components/ArticleForm'; // Import Article type from its new location
+import TaskForm, { Task } from '@/components/TaskForm'; // Corrected import path
+import ArticleForm, { Article } from '@/components/ArticleForm'; // Corrected import path
 import { toast } from 'sonner';
 import ActiveServiceCard from '@/components/ActiveServiceCard'; // Import ActiveServiceCard
+import { apiAddTask, apiAddArticle, apiGetArticles } from '@/api'; // Import mock API
 
 type ServiceState = 'idle' | 'selecting_category' | 'in_flow';
 
@@ -23,6 +22,7 @@ const ServicePage = () => {
   const [isAddKnowledgeOpen, setIsAddKnowledgeOpen] = useState(false);
   const [activeServiceStatus, setActiveServiceStatus] = useState<'active' | 'resolved' | 'escalated'>('active');
   const [escalatedResolver, setEscalatedResolver] = useState<string | undefined>(undefined);
+  const [kbSuggestions, setKbSuggestions] = useState<Article[]>([]);
 
 
   const handleStartService = () => {
@@ -31,6 +31,7 @@ const ServicePage = () => {
     setHistory([]);
     setActiveServiceStatus('active');
     setEscalatedResolver(undefined);
+    setKbSuggestions([]);
   };
 
   const handleCategorySelect = (startNodeId: string) => {
@@ -39,6 +40,7 @@ const ServicePage = () => {
     setHistory([startNode]); // Start history with the selected category's first node
     setState('in_flow');
     setActiveServiceStatus('active');
+    setKbSuggestions([]);
   };
   
   const handleReset = () => {
@@ -47,6 +49,7 @@ const ServicePage = () => {
     setHistory([]);
     setActiveServiceStatus('resolved'); // Mark as resolved when resetting
     setEscalatedResolver(undefined);
+    setKbSuggestions([]);
   }
 
   const handleBack = () => {
@@ -56,6 +59,7 @@ const ServicePage = () => {
       setHistory(newHistory);
       setCurrentNodeId(previousNode.id);
       setActiveServiceStatus('active');
+      setKbSuggestions([]);
     } else {
       // If only one item in history, go back to category selection
       handleBackToCategories();
@@ -67,6 +71,7 @@ const ServicePage = () => {
     setCurrentNodeId(null);
     setHistory([]);
     setActiveServiceStatus('active');
+    setKbSuggestions([]);
   }
 
   const handleSelectOption = (nextNodeId: string | null) => {
@@ -74,19 +79,31 @@ const ServicePage = () => {
       const nextNode = mindmapData[nextNodeId];
       setHistory([...history, nextNode]);
       setCurrentNodeId(nextNodeId);
-      if (nextNodeId.startsWith('end_')) {
-        if (nextNodeId === 'end_escalar_tecnico') {
+      if (nextNode.id.startsWith('end_')) {
+        if (nextNode.id === 'end_escalar_tecnico') {
           setActiveServiceStatus('escalated');
           setEscalatedResolver('Técnico Especializado'); // Simulate who resolved it
         } else {
           setActiveServiceStatus('resolved');
         }
+        // Suggest KB articles if it's an end node that isn't a direct resolution
+        if (nextNode.id !== 'end_success' && nextNode.id !== 'end_escalar_tecnico') {
+          const relevantArticles = apiGetArticles().filter(article => 
+            nextNode.question.toLowerCase().includes(article.category.toLowerCase()) ||
+            article.content.toLowerCase().includes(nextNode.question.toLowerCase())
+          ).slice(0, 3); // Limit to 3 suggestions
+          setKbSuggestions(relevantArticles);
+        } else {
+          setKbSuggestions([]);
+        }
       } else {
         setActiveServiceStatus('active');
+        setKbSuggestions([]);
       }
     } else {
       setCurrentNodeId(null);
       setActiveServiceStatus('resolved');
+      setKbSuggestions([]);
     }
   };
 
@@ -94,16 +111,23 @@ const ServicePage = () => {
     handleSelectOption('end_escalar_tecnico');
   };
 
-  const handleSaveNewTask = (data: Omit<Task, 'id' | 'history'>) => {
-    // In a real app, this would send data to TasksPage state or a global store
+  const handleSaveNewTask = (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
+    apiAddTask(data);
     toast.success(`Tarefa "${data.title}" criada com sucesso!`);
     setIsAddTaskOpen(false);
   };
 
-  const handleSaveNewArticle = (data: Article) => {
-    // In a real app, this would send data to KnowledgeBasePage state or a global store
+  const handleSaveNewArticle = (data: Omit<Article, 'id'>) => {
+    apiAddArticle(data);
     toast.success(`Artigo "${data.title}" adicionado à Base de Conhecimento!`);
     setIsAddKnowledgeOpen(false);
+  };
+
+  const getCategorySubthemes = (categoryId: string) => {
+    const startNodeId = categories.find(cat => cat.id === categoryId)?.startNodeId;
+    if (!startNodeId) return '';
+    const startNode = mindmapData[startNodeId];
+    return startNode.options.map(opt => opt.text).join(', ');
   };
 
   const renderContent = () => {
@@ -131,6 +155,7 @@ const ServicePage = () => {
                   key={cat.id} 
                   className="flex flex-col items-center justify-center p-6 hover:bg-accent hover:shadow-lg transition-all cursor-pointer"
                   onClick={() => handleCategorySelect(cat.startNodeId)}
+                  title={getCategorySubthemes(cat.id)} // Subthemes on hover
                 >
                   <cat.icon className="h-10 w-10 mb-3 text-primary" />
                   <CardHeader className="p-0">
@@ -164,6 +189,21 @@ const ServicePage = () => {
                 <BookOpen className="mr-2 h-4 w-4" /> Adicionar Conhecimento
               </Button>
             </div>
+
+            {kbSuggestions.length > 0 && (
+              <div className="mt-8 p-4 border rounded-lg bg-card shadow-sm animate-in fade-in slide-in-from-bottom-5">
+                <h3 className="text-lg font-semibold mb-3">Sugestões da Base de Conhecimento:</h3>
+                <ul className="space-y-2">
+                  {kbSuggestions.map(article => (
+                    <li key={article.id} className="text-sm text-muted-foreground">
+                      <BookOpen className="inline-block h-4 w-4 mr-2" />
+                      <strong>{article.title}</strong> ({article.category})
+                      <p className="ml-6 text-xs italic line-clamp-2">{article.content}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </>
         );
       default:

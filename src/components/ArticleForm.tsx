@@ -16,21 +16,21 @@ const articleSchema = z.object({
 });
 export type Article = z.infer<typeof articleSchema>; // Export Article type if needed elsewhere
 
-const categories = ['Hardware', 'Software', 'Rede', 'Sistemas Internos', 'Segurança', 'Outros'];
+const categories = ['Hardware', 'Software', 'Rede', 'Sistemas Internos', 'Segurança', 'Outros', 'Atendimento Aluno', 'Atendimento Professor', 'Atendimento Staff', 'Software Académico'];
 
 interface ArticleFormProps {
   article?: Article;
-  onSave: (article: Article) => void;
+  onSave: (article: Omit<Article, 'id'>) => void;
   onOpenChange: (open: boolean) => void;
 }
 
 const ArticleForm = ({ article, onSave, onOpenChange }: ArticleFormProps) => {
-  const form = useForm<Article>({
-    resolver: zodResolver(articleSchema),
+  const form = useForm<Omit<Article, 'id'>>({
+    resolver: zodResolver(articleSchema.omit({ id: true })),
     defaultValues: article || { title: '', content: '', category: '' },
   });
 
-  const onSubmit = (data: Article) => {
+  const onSubmit = (data: Omit<Article, 'id'>) => {
     onSave(data);
     onOpenChange(false);
     form.reset();

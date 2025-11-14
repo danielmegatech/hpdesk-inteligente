@@ -1,14 +1,5 @@
 import { Cpu, Wifi, AppWindow, AlertTriangle, CheckCircle, XCircle, GitBranch, BookOpen } from 'lucide-react';
 
-// --- Sample Report Metrics ---
-export const reportMetrics = [
-  { title: 'Tickets Resolvidos (Hoje)', value: '14', change: '+2', icon: CheckCircle },
-  { title: 'Tempo Médio de Resolução', value: '45 min', change: '-5 min', icon: XCircle },
-  { title: 'Tickets por Categoria (Top 3)', value: 'Rede, Password, Computador', icon: GitBranch },
-  { title: 'Satisfação do Usuário', value: '92%', change: '+1%', icon: CheckCircle },
-];
-
-
 // --- Possibility Tree Data ---
 export interface PossibilityNode {
   id: string;
@@ -20,7 +11,7 @@ export interface PossibilityNode {
 
 export const possibilityTreeData: PossibilityNode = {
   id: 'root',
-  text: 'Usuário relata lentidão na rede',
+  text: 'Utilizador relata lentidão na rede',
   type: 'path_taken',
   icon: Wifi,
   children: [
@@ -32,7 +23,7 @@ export const possibilityTreeData: PossibilityNode = {
       children: [
         {
           id: 'cable_ok',
-          text: 'Cabo OK, luzes piscando',
+          text: 'Cabo OK, luzes a piscar',
           type: 'path_taken',
           icon: CheckCircle,
           children: [
@@ -48,7 +39,7 @@ export const possibilityTreeData: PossibilityNode = {
                   type: 'path_taken',
                   icon: XCircle,
                    children: [
-                    { id: 'ticket_network_point', text: 'RESOLUÇÃO: Abrir ticket para verificar ponto de rede.', type: 'resolution', icon: AlertTriangle }
+                    { id: 'ticket_network_point', text: 'RESOLUÇÃO: Abrir pedido de suporte para verificar ponto de rede.', type: 'resolution', icon: AlertTriangle }
                   ]
                 },
                 {
@@ -67,11 +58,11 @@ export const possibilityTreeData: PossibilityNode = {
         },
         {
           id: 'cable_bad',
-          text: 'Cabo desconectado ou sem luz',
+          text: 'Cabo desligado ou sem luz',
           type: 'alternative',
           icon: XCircle,
           children: [
-            { id: 'instruct_reconnect', text: 'Instruir usuário a reconectar', type: 'alternative', icon: Wifi },
+            { id: 'instruct_reconnect', text: 'Instruir utilizador a reconectar', type: 'alternative', icon: Wifi },
           ]
         }
       ]
@@ -82,7 +73,7 @@ export const possibilityTreeData: PossibilityNode = {
       type: 'alternative',
       icon: AlertTriangle,
       children: [
-        { id: 'check_monitoring', text: 'Consultar sistema de monitoramento', type: 'alternative', icon: AppWindow },
+        { id: 'check_monitoring', text: 'Consultar sistema de monitorização', type: 'alternative', icon: AppWindow },
       ]
     }
   ]

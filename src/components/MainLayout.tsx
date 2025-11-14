@@ -10,6 +10,11 @@ import { toast } from 'sonner';
 import { Task } from '@/components/TaskForm'; // Import Task type
 import { formatDistanceToNow } from 'date-fns'; // Import formatDistanceToNow
 import { ptBR } from 'date-fns/locale'; // Import ptBR locale
+import NotificationBell from './NotificationBell'; // Import NotificationBell
+import { apiGetTasks, apiAddNotification } from '@/api'; // Import mock API
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Importando componentes Dialog
+import TaskForm from '@/components/TaskForm'; // Importando TaskForm
+import ArticleForm from '@/components/ArticleForm'; // Importando ArticleForm
 
 const navItems = [
   { to: '/', label: 'Atendimento', icon: Home },
@@ -32,15 +37,27 @@ const NavContent = () => (
 const MainLayout = () => {
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const { settings } = useSettings();
-  // For now, tasks are managed within TasksPage. For global notifications,
-  // a more robust state management (like React Context or Redux) would be needed.
-  // For this iteration, we'll simulate task data for notifications.
-  const [tasks, setTasks] = useState<Task[]>([]); // Placeholder for tasks
+
+  // State and functions to trigger modals from AI Command Bar
+  const [isAddTaskOpenFromAI, setIsAddTaskOpenFromAI] = useState(false);
+  const [initialTaskDataFromAI, setInitialTaskDataFromAI] = useState<{ title?: string; description?: string } | undefined>(undefined);
+  const [isAddKnowledgeOpenFromAI, setIsAddKnowledgeOpenFromAI] = useState(false);
+  const [initialArticleDataFromAI, setInitialArticleDataFromAI] = useState<{ title?: string; content?: string; category?: string } | undefined>(undefined);
+
+  const handleTriggerAddTaskFromAI = (title?: string, description?: string) => {
+    setInitialTaskDataFromAI({ title, description });
+    setIsAddTaskOpenFromAI(true);
+  };
+
+  const handleTriggerAddKnowledgeFromAI = (title?: string, content?: string, category?: string) => {
+    setInitialArticleDataFromAI({ title, content, category });
+    setIsAddKnowledgeOpenFromAI(true);
+  };
 
   useEffect(() => {
     const checkWorkHoursAndTasks = () => {
       const now = new Date();
-      const today = now.toDateString(); // Moved 'today' definition here
+      const today = now.toDateString();
       const [startHour, startMinute] = settings.workStartTime.split(':').map(Number);
       const [endHour, endMinute] = settings.workEndTime.split(':').map(Number);
       
@@ -54,28 +71,23 @@ const MainLayout = () => {
       if (now >= startTime && now <= endTime) {
         const lastShown = localStorage.getItem('welcome-notification-date');
         if (lastShown !== today) {
-          toast.info('Bem-vindo ao seu turno!', { description: 'Tenha um ótimo dia de trabalho.' });
+          apiAddNotification({ message: 'Bem-vindo ao seu turno!', description: 'Tenha um ótimo dia de trabalho.', type: 'info' });
           localStorage.setItem('welcome-notification-date', today);
         }
       }
 
-      // Simulate task deadline notifications (in a real app, this would fetch actual tasks)
-      const simulatedTasks: Task[] = [
-        { id: 'sim-task-1', title: 'Reunião com cliente X', description: 'Preparar apresentação.', status: 'emAndamento', deadline: new Date(Date.now() + 3600000), history: [], location: 'Sala A', time: '10:00' }, // Due in 1 hour
-        { id: 'sim-task-2', title: 'Enviar relatório mensal', description: 'Finalizar dados.', status: 'novo', deadline: new Date(Date.now() + 86400000 * 2), history: [], location: 'Remoto', time: '17:00' }, // Due in 2 days
-      ];
-
-      simulatedTasks.forEach(task => {
+      // Task deadline notifications (using mock API)
+      const allTasks = apiGetTasks();
+      allTasks.forEach(task => {
         if (task.deadline && task.status !== 'concluido' && task.status !== 'lixeira') {
           const diff = task.deadline.getTime() - now.getTime();
           const oneDay = 86400000; // milliseconds in a day
-          const oneHour = 3600000; // milliseconds in an hour
 
           if (diff > 0 && diff <= oneDay && !localStorage.getItem(`deadline-notified-${task.id}-${today}`)) {
-            toast.warning(`Prazo se aproximando: "${task.title}"`, { description: `Vence em ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.` });
+            apiAddNotification({ message: `Prazo a aproximar: "${task.title}"`, description: `Vence em ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.`, type: 'warning' });
             localStorage.setItem(`deadline-notified-${task.id}-${today}`, 'true');
           } else if (diff <= 0 && !localStorage.getItem(`overdue-notified-${task.id}-${today}`)) {
-            toast.error(`Tarefa atrasada: "${task.title}"`, { description: `Venceu ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.` });
+            apiAddNotification({ message: `Tarefa atrasada: "${task.title}"`, description: `Venceu ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.`, type: 'error' });
             localStorage.setItem(`overdue-notified-${task.id}-${today}`, 'true');
           }
         }
@@ -91,7 +103,12 @@ const MainLayout = () => {
 
   return (
     <>
-      <AICommandBar open={commandBarOpen} onOpenChange={setCommandBarOpen} />
+      <AICommandBar 
+        open={commandBarOpen} 
+        onOpenChange={setCommandBarOpen} 
+        onTriggerAddTask={handleTriggerAddTaskFromAI}
+        onTriggerAddKnowledge={handleTriggerAddKnowledgeFromAI}
+      />
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <div className="hidden border-r bg-muted/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
@@ -108,11 +125,47 @@ const MainLayout = () => {
                 <NavContent />
               </SheetContent>
             </Sheet>
-            <div className="w-full flex-1"><Button variant="outline" size="sm" className="ml-auto gap-1.5 text-sm" onClick={() => setCommandBarOpen(true)}><Bot className="h-4 w-4" />Assistente IA</Button></div>
+            <div className="w-full flex-1 flex justify-end items-center gap-4">
+              <NotificationBell /> {/* Notification Bell */}
+              <Button variant="outline" size="sm" className="gap-1.5 text-sm" onClick={() => setCommandBarOpen(true)}><Bot className="h-4 w-4" />Assistente IA</Button>
+            </div>
           </header>
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-gray-50 dark:bg-gray-900 overflow-auto"><Outlet /></main>
         </div>
       </div>
+
+      {/* Modals for Add Task and Add Knowledge triggered by AI Command Bar */}
+      <Dialog open={isAddTaskOpenFromAI} onOpenChange={setIsAddTaskOpenFromAI}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Criar Nova Tarefa (via Assistente IA)</DialogTitle></DialogHeader>
+          <TaskForm 
+            task={initialTaskDataFromAI} 
+            onSave={(data) => {
+              apiAddTask(data);
+              toast.success(`Tarefa "${data.title}" criada com sucesso!`);
+              setIsAddTaskOpenFromAI(false);
+              setInitialTaskDataFromAI(undefined);
+            }} 
+            onOpenChange={setIsAddTaskOpenFromAI} 
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddKnowledgeOpenFromAI} onOpenChange={setIsAddKnowledgeOpenFromAI}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Adicionar Novo Artigo (via Assistente IA)</DialogTitle></DialogHeader>
+          <ArticleForm 
+            article={initialArticleDataFromAI} 
+            onSave={(data) => {
+              apiAddArticle(data);
+              toast.success(`Artigo "${data.title}" adicionado à Base de Conhecimento!`);
+              setIsAddKnowledgeOpenFromAI(false);
+              setInitialArticleDataFromAI(undefined);
+            }} 
+            onOpenChange={setIsAddKnowledgeOpenFromAI} 
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

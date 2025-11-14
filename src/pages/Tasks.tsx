@@ -1,16 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, Edit, MoreVertical, PlusCircle, Trash2, History } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -19,45 +11,18 @@ import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TaskForm from '@/components/TaskForm'; // Import TaskForm from its new location
+import TaskForm, { Task } from '@/components/TaskForm'; // Import TaskForm and Task type
+import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask } from '@/api'; // Import mock API
 
 // --- TYPES AND SCHEMA ---
-const taskStatusSchema = z.enum(['novo', 'emAndamento', 'pendenteAutorizacaoEscalado', 'concluido', 'lixeira']);
-type TaskStatus = z.infer<typeof taskStatusSchema>;
-
-const taskHistorySchema = z.object({
-  status: taskStatusSchema,
-  timestamp: z.date(),
-});
-type TaskHistory = z.infer<typeof taskHistorySchema>;
-
-const taskSchema = z.object({
-  id: z.string(),
-  title: z.string().min(1, 'O título é obrigatório.'),
-  description: z.string().optional(),
-  deadline: z.date().optional(),
-  location: z.string().optional(), // New field
-  time: z.string().optional(),     // New field for time of deadline
-  status: taskStatusSchema,
-  history: z.array(taskHistorySchema),
-});
-export type Task = z.infer<typeof taskSchema>; // Export Task type for use in other files
-
-// --- INITIAL DATA ---
-const initialTasks: Task[] = [
-  { id: 'task-1', title: 'Verificar backup do servidor', description: 'Garantir que o backup noturno foi concluído.', status: 'novo', history: [{ status: 'novo', timestamp: new Date() }], location: 'Sala de Servidores', time: '10:00' },
-  { id: 'task-2', title: 'Reset de senha para usuário', description: 'Usuário: joao.silva', status: 'emAndamento', deadline: new Date(Date.now() + 86400000), history: [{ status: 'novo', timestamp: new Date(Date.now() - 3600000) }, { status: 'emAndamento', timestamp: new Date() }], location: 'Remoto', time: '14:30' },
-  { id: 'task-3', title: 'Trocar toner da impressora', description: 'Modelo HP LaserJet Pro M404dn', status: 'concluido', history: [{ status: 'novo', timestamp: new Date(Date.now() - 86400000) }, { status: 'emAndamento', timestamp: new Date(Date.now() - 7200000) }, { status: 'concluido', timestamp: new Date() }], location: 'Escritório 3º Andar', time: '11:00' },
-  { id: 'task-4', title: 'Aguardar aprovação para compra de licença', description: 'Licença do software X para o departamento Y.', status: 'pendenteAutorizacaoEscalado', history: [{ status: 'novo', timestamp: new Date(Date.now() - 172800000) }, { status: 'pendenteAutorizacaoEscalado', timestamp: new Date(Date.now() - 86400000) }], location: 'Financeiro', time: '17:00' },
-];
-
-const statusMap: Record<TaskStatus, string> = {
+const taskStatusMap = {
   novo: 'Novo',
   emAndamento: 'Em Andamento',
   pendenteAutorizacaoEscalado: 'Pendente/Escalado',
   concluido: 'Concluído',
   lixeira: 'Lixeira',
 };
+type TaskStatus = keyof typeof taskStatusMap;
 
 const statusColorMap: Record<TaskStatus, string> = {
   novo: 'border-blue-500',
@@ -73,7 +38,10 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory }: { task: Task; onEdi
   const style = { transform: CSS.Transform.toString(transform), transition };
   
   const lastHistoryEntry = task.history[task.history.length - 1];
-  const timestampTitle = lastHistoryEntry ? `Última atualização: ${format(lastHistoryEntry.timestamp, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })} - ${statusMap[lastHistoryEntry.status]}` : 'Sem histórico';
+  const timestampTitle = `Criado: ${format(task.createdAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` +
+                         `Última atualização: ${format(task.updatedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` +
+                         (task.completedAt ? `Concluído: ${format(task.completedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` : '') +
+                         `Status: ${taskStatusMap[task.status]}`;
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} title={timestampTitle}>
@@ -99,7 +67,7 @@ const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory }: { stat
   const { setNodeRef } = useSortable({ id: status, data: { type: 'container' } });
   return (
     <div ref={setNodeRef} className="flex flex-col w-full md:w-1/5 bg-muted/60 p-4 rounded-lg min-h-[200px]">
-      <h3 className="text-lg font-semibold mb-4">{statusMap[status]} ({tasks.length})</h3>
+      <h3 className="text-lg font-semibold mb-4">{taskStatusMap[status]} ({tasks.length})</h3>
       <div className="space-y-3 flex-grow">
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map(task => <TaskCard key={task.id} task={task} onEdit={() => onEdit(task)} onDelete={() => onDelete(task)} onShowHistory={() => onShowHistory(task)} />)}
@@ -110,22 +78,31 @@ const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory }: { stat
 };
 
 const TasksPage = () => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
 
-  const handleSaveTask = (data: Omit<Task, 'id' | 'history'>) => {
+  useEffect(() => {
+    setTasks(apiGetTasks());
+  }, []);
+
+  const handleSaveTask = (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
     if (selectedTask) { // Edit
-      setTasks(tasks.map(t => t.id === selectedTask.id ? { ...selectedTask, ...data } : t));
+      const updatedTask = { ...selectedTask, ...data };
+      apiUpdateTask(updatedTask);
     } else { // Add
-      const newTask: Task = { ...data, id: `task-${Date.now()}`, history: [{ status: data.status, timestamp: new Date() }] };
-      setTasks([...tasks, newTask]);
+      apiAddTask(data);
     }
+    setTasks(apiGetTasks()); // Refresh tasks from API
     setSelectedTask(undefined);
   };
 
-  const handleDeleteTask = (taskToDelete: Task) => setTasks(tasks.filter(t => t.id !== taskToDelete.id));
+  const handleDeleteTask = (taskToDelete: Task) => {
+    apiDeleteTask(taskToDelete.id);
+    setTasks(apiGetTasks()); // Refresh tasks from API
+  };
+
   const handleOpenEdit = (task: Task) => { setSelectedTask(task); setIsFormOpen(true); };
   const handleOpenAdd = () => { setSelectedTask(undefined); setIsFormOpen(true); };
   const handleShowHistory = (task: Task) => { setSelectedTask(task); setIsHistoryOpen(true); };
@@ -142,12 +119,9 @@ const TasksPage = () => {
     const overContainer = (over.data.current?.type === 'container' ? overId : tasks.find(t => t.id === overId)?.status) as TaskStatus | undefined;
     if (!overContainer || activeTask.status === overContainer) return;
 
-    setTasks(prevTasks => prevTasks.map(task => {
-      if (task.id === activeId) {
-        return { ...task, status: overContainer, history: [...task.history, { status: overContainer, timestamp: new Date() }] };
-      }
-      return task;
-    }));
+    const updatedTask = { ...activeTask, status: overContainer };
+    apiUpdateTask(updatedTask); // Update via API
+    setTasks(apiGetTasks()); // Refresh tasks from API
   };
 
   const tasksByStatus = (status: TaskStatus) => tasks.filter(t => t.status === status);
@@ -161,7 +135,7 @@ const TasksPage = () => {
         </Dialog>
         <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}><DialogContent>
           <DialogHeader><DialogTitle>Histórico da Tarefa</DialogTitle><DialogDescription>{selectedTask?.title}</DialogDescription></DialogHeader>
-          <ul className="space-y-2">{selectedTask?.history.map((h, i) => <li key={i} className="text-sm"><strong>{statusMap[h.status]}:</strong> {format(h.timestamp, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</li>).reverse()}</ul>
+          <ul className="space-y-2">{selectedTask?.history.map((h, i) => <li key={i} className="text-sm"><strong>{taskStatusMap[h.status]}:</strong> {format(h.timestamp, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</li>).reverse()}</ul>
         </DialogContent></Dialog>
       </div>
       <Tabs defaultValue="kanban">
@@ -169,7 +143,7 @@ const TasksPage = () => {
         <TabsContent value="kanban">
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <div className="flex flex-col md:flex-row gap-6 mt-4">
-              {(Object.keys(statusMap) as TaskStatus[]).map(status => (
+              {(Object.keys(taskStatusMap) as TaskStatus[]).map(status => (
                 <KanbanColumn key={status} status={status} tasks={tasksByStatus(status)} onEdit={handleOpenEdit} onDelete={handleDeleteTask} onShowHistory={handleShowHistory} />
               ))}
             </div>
@@ -179,7 +153,14 @@ const TasksPage = () => {
           <Card className="mt-4"><CardContent className="p-2"><Calendar locale={ptBR} mode="single" selected={new Date()} className="p-0" 
             components={{ Day: ({ date }) => {
               const tasksOnDay = tasks.filter(t => t.deadline && format(t.deadline, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'));
-              return <div className="relative">{format(date, 'd')}{tasksOnDay.length > 0 && <div className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1.5 w-1.5 bg-blue-500 rounded-full" />}</div>;
+              return (
+                <div className="relative text-center">
+                  {format(date, 'd')}
+                  {tasksOnDay.length > 0 && (
+                    <div className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1.5 w-1.5 bg-blue-500 rounded-full" title={tasksOnDay.map(t => `${t.title} (${t.time || 'sem hora'})`).join('\n')} />
+                  )}
+                </div>
+              );
             }}}
           /></CardContent></Card>
         </TabsContent>
