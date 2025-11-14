@@ -1,16 +1,56 @@
 import { MindmapNode } from '@/data/mindmap';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, PlusCircle, SkipForward, ArrowLeft } from 'lucide-react';
+import { ArrowRight, PlusCircle, SkipForward, ArrowLeft, ArrowDown } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface MindmapFlowProps {
   node: MindmapNode;
   onSelectOption: (nextNodeId: string | null) => void;
   onReset: () => void;
   onBack: () => void;
+  onEscalate: () => void; // New prop for escalation
 }
 
-const MindmapFlow = ({ node, onSelectOption, onReset, onBack }: MindmapFlowProps) => {
+const MindmapFlow = ({ node, onSelectOption, onReset, onBack, onEscalate }: MindmapFlowProps) => {
   const isEndNode = node.options.length === 0;
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isEndNode) return; // No keyboard navigation on end nodes
+
+      switch (event.key) {
+        case 'ArrowRight': // Sim (first option)
+          if (node.options.length > 0) {
+            onSelectOption(node.options[0].nextNodeId);
+          }
+          break;
+        case 'ArrowLeft': // Não (second option) or Back
+          if (node.options.length > 1) {
+            onSelectOption(node.options[1].nextNodeId);
+          } else {
+            onBack(); // If only one option, or no specific 'Não', go back
+          }
+          break;
+        case ' ': // Space for Pular
+          // Assuming 'Pular' would move to a generic next step or end the flow
+          // For now, we can map it to a specific action if needed, or just prevent default
+          event.preventDefault(); // Prevent scrolling
+          // Implement 'Pular' logic here if it's a distinct action
+          // For this example, I'll just prevent default and not map to a specific node
+          break;
+        case 'ArrowDown': // Não sei / Escalar
+          onEscalate();
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [node, isEndNode, onSelectOption, onBack, onEscalate]);
 
   return (
     <div className="w-full max-w-3xl flex flex-col items-center gap-8 p-4 animate-in fade-in zoom-in-95">
@@ -64,9 +104,20 @@ const MindmapFlow = ({ node, onSelectOption, onReset, onBack }: MindmapFlowProps
             <Button variant="outline" size="sm">
                 <SkipForward className="mr-2 h-4 w-4" /> Pular
             </Button>
-            <Button variant="outline" size="sm">
-                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Entrada
+            <Button variant="destructive" size="sm" onClick={onEscalate}> {/* New Escalate button */}
+                <ArrowDown className="mr-2 h-4 w-4" /> Escalar
             </Button>
+        </div>
+      )}
+
+      {/* Keyboard Navigation Tips */}
+      {!isEndNode && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-1.5 rounded-md shadow-lg flex items-center space-x-2">
+          <span>Dicas:</span>
+          <span className="flex items-center"><ArrowRight className="h-3 w-3 mr-1" /> Sim</span>
+          <span className="flex items-center"><ArrowLeft className="h-3 w-3 mr-1" /> Não / Voltar</span>
+          <span className="flex items-center">Espaço Pular</span>
+          <span className="flex items-center"><ArrowDown className="h-3 w-3 mr-1" /> Escalar</span>
         </div>
       )}
     </div>

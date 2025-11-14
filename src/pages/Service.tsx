@@ -20,7 +20,9 @@ const ServicePage = () => {
   };
 
   const handleCategorySelect = (startNodeId: string) => {
+    const startNode = mindmapData[startNodeId];
     setCurrentNodeId(startNodeId);
+    setHistory([startNode]); // Start history with the selected category's first node
     setState('in_flow');
   };
   
@@ -30,6 +32,18 @@ const ServicePage = () => {
     setHistory([]);
   }
 
+  const handleBack = () => {
+    if (history.length > 1) {
+      const newHistory = history.slice(0, -1); // Remove current node from history
+      const previousNode = newHistory[newHistory.length - 1];
+      setHistory(newHistory);
+      setCurrentNodeId(previousNode.id);
+    } else {
+      // If only one item in history, go back to category selection
+      handleBackToCategories();
+    }
+  }
+
   const handleBackToCategories = () => {
     setState('selecting_category');
     setCurrentNodeId(null);
@@ -37,11 +51,19 @@ const ServicePage = () => {
   }
 
   const handleSelectOption = (nextNodeId: string | null) => {
-    if (currentNodeId) {
-      const lastNode = mindmapData[currentNodeId];
-      setHistory([...history, lastNode]);
+    if (nextNodeId) {
+      const nextNode = mindmapData[nextNodeId];
+      setHistory([...history, nextNode]);
+      setCurrentNodeId(nextNodeId);
+    } else {
+      // Handle null nextNodeId, e.g., if it's an end node
+      setCurrentNodeId(null); // Or keep current node if it's an end node
     }
-    setCurrentNodeId(nextNodeId);
+  };
+
+  const handleEscalate = () => {
+    // Logic for escalation, e.g., navigate to a specific end node or trigger a modal
+    handleSelectOption('end_escalar_tecnico'); // Use the new escalation end node
   };
 
   const renderContent = () => {
@@ -84,7 +106,7 @@ const ServicePage = () => {
         return (
           <>
             <MindmapHistory history={history} />
-            {currentNode && <MindmapFlow node={currentNode} onSelectOption={handleSelectOption} onReset={handleReset} onBack={handleBackToCategories} />}
+            {currentNode && <MindmapFlow node={currentNode} onSelectOption={handleSelectOption} onReset={handleReset} onBack={handleBack} onEscalate={handleEscalate} />}
           </>
         );
       default:
