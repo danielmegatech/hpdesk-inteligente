@@ -1,4 +1,4 @@
-import { Cpu, Wifi, AppWindow, AlertTriangle, CheckCircle, XCircle, GitBranch } from 'lucide-react';
+import { Cpu, Wifi, AppWindow, AlertTriangle, CheckCircle, XCircle, GitBranch, BookOpen } from 'lucide-react';
 
 // --- Sample Report Metrics ---
 export const reportMetrics = [

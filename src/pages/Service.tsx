@@ -11,6 +11,7 @@ import ArticleForm from '@/components/ArticleForm'; // Corrected import path
 import { Task } from '@/components/TaskForm'; // Import Task type from its new location
 import { Article } from '@/components/ArticleForm'; // Import Article type from its new location
 import { toast } from 'sonner';
+import ActiveServiceCard from '@/components/ActiveServiceCard'; // Import ActiveServiceCard
 
 type ServiceState = 'idle' | 'selecting_category' | 'in_flow';
 
@@ -20,11 +21,16 @@ const ServicePage = () => {
   const [history, setHistory] = useState<MindmapNode[]>([]);
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [isAddKnowledgeOpen, setIsAddKnowledgeOpen] = useState(false);
+  const [activeServiceStatus, setActiveServiceStatus] = useState<'active' | 'resolved' | 'escalated'>('active');
+  const [escalatedResolver, setEscalatedResolver] = useState<string | undefined>(undefined);
+
 
   const handleStartService = () => {
     setState('selecting_category');
     setCurrentNodeId(null);
     setHistory([]);
+    setActiveServiceStatus('active');
+    setEscalatedResolver(undefined);
   };
 
   const handleCategorySelect = (startNodeId: string) => {
@@ -32,12 +38,15 @@ const ServicePage = () => {
     setCurrentNodeId(startNodeId);
     setHistory([startNode]); // Start history with the selected category's first node
     setState('in_flow');
+    setActiveServiceStatus('active');
   };
   
   const handleReset = () => {
     setState('idle');
     setCurrentNodeId(null);
     setHistory([]);
+    setActiveServiceStatus('resolved'); // Mark as resolved when resetting
+    setEscalatedResolver(undefined);
   }
 
   const handleBack = () => {
@@ -46,6 +55,7 @@ const ServicePage = () => {
       const previousNode = newHistory[newHistory.length - 1];
       setHistory(newHistory);
       setCurrentNodeId(previousNode.id);
+      setActiveServiceStatus('active');
     } else {
       // If only one item in history, go back to category selection
       handleBackToCategories();
@@ -56,6 +66,7 @@ const ServicePage = () => {
     setState('selecting_category');
     setCurrentNodeId(null);
     setHistory([]);
+    setActiveServiceStatus('active');
   }
 
   const handleSelectOption = (nextNodeId: string | null) => {
@@ -63,9 +74,19 @@ const ServicePage = () => {
       const nextNode = mindmapData[nextNodeId];
       setHistory([...history, nextNode]);
       setCurrentNodeId(nextNodeId);
+      if (nextNodeId.startsWith('end_')) {
+        if (nextNodeId === 'end_escalar_tecnico') {
+          setActiveServiceStatus('escalated');
+          setEscalatedResolver('Técnico Especializado'); // Simulate who resolved it
+        } else {
+          setActiveServiceStatus('resolved');
+        }
+      } else {
+        setActiveServiceStatus('active');
+      }
     } else {
-      // Handle null nextNodeId, e.g., if it's an end node
-      setCurrentNodeId(null); // Or keep current node if it's an end node
+      setCurrentNodeId(null);
+      setActiveServiceStatus('resolved');
     }
   };
 
@@ -124,6 +145,7 @@ const ServicePage = () => {
         const currentNode = currentNodeId ? mindmapData[currentNodeId] : null;
         return (
           <>
+            <ActiveServiceCard history={history} status={activeServiceStatus} escalatedTo={escalatedResolver} />
             <MindmapHistory history={history} />
             {currentNode && (
               <MindmapFlow 

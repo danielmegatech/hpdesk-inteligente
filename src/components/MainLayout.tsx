@@ -7,7 +7,7 @@ import { AICommandBar } from './AICommandBar';
 import { useState, useEffect } from 'react';
 import { useSettings } from '@/hooks/use-settings';
 import { toast } from 'sonner';
-import { Task } from '@/pages/Tasks'; // Import Task type
+import { Task } from '@/components/TaskForm'; // Import Task type
 import { formatDistanceToNow } from 'date-fns'; // Import formatDistanceToNow
 import { ptBR } from 'date-fns/locale'; // Import ptBR locale
 
@@ -61,8 +61,8 @@ const MainLayout = () => {
 
       // Simulate task deadline notifications (in a real app, this would fetch actual tasks)
       const simulatedTasks: Task[] = [
-        { id: 'sim-task-1', title: 'Reunião com cliente X', description: 'Preparar apresentação.', status: 'emAndamento', deadline: new Date(Date.now() + 3600000), history: [] }, // Due in 1 hour
-        { id: 'sim-task-2', title: 'Enviar relatório mensal', description: 'Finalizar dados.', status: 'novo', deadline: new Date(Date.now() + 86400000 * 2), history: [] }, // Due in 2 days
+        { id: 'sim-task-1', title: 'Reunião com cliente X', description: 'Preparar apresentação.', status: 'emAndamento', deadline: new Date(Date.now() + 3600000), history: [], location: 'Sala A', time: '10:00' }, // Due in 1 hour
+        { id: 'sim-task-2', title: 'Enviar relatório mensal', description: 'Finalizar dados.', status: 'novo', deadline: new Date(Date.now() + 86400000 * 2), history: [], location: 'Remoto', time: '17:00' }, // Due in 2 days
       ];
 
       simulatedTasks.forEach(task => {

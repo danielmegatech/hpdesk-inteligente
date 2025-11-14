@@ -36,6 +36,8 @@ const taskSchema = z.object({
   title: z.string().min(1, 'O título é obrigatório.'),
   description: z.string().optional(),
   deadline: z.date().optional(),
+  location: z.string().optional(), // New field
+  time: z.string().optional(),     // New field for time of deadline
   status: taskStatusSchema,
   history: z.array(taskHistorySchema),
 });
@@ -43,10 +45,10 @@ export type Task = z.infer<typeof taskSchema>; // Export Task type for use in ot
 
 // --- INITIAL DATA ---
 const initialTasks: Task[] = [
-  { id: 'task-1', title: 'Verificar backup do servidor', description: 'Garantir que o backup noturno foi concluído.', status: 'novo', history: [{ status: 'novo', timestamp: new Date() }] },
-  { id: 'task-2', title: 'Reset de senha para usuário', description: 'Usuário: joao.silva', status: 'emAndamento', deadline: new Date(), history: [{ status: 'novo', timestamp: new Date(Date.now() - 3600000) }, { status: 'emAndamento', timestamp: new Date() }] },
-  { id: 'task-3', title: 'Trocar toner da impressora', description: 'Modelo HP LaserJet Pro M404dn', status: 'concluido', history: [{ status: 'novo', timestamp: new Date(Date.now() - 86400000) }, { status: 'emAndamento', timestamp: new Date(Date.now() - 7200000) }, { status: 'concluido', timestamp: new Date() }] },
-  { id: 'task-4', title: 'Aguardar aprovação para compra de licença', description: 'Licença do software X para o departamento Y.', status: 'pendenteAutorizacaoEscalado', history: [{ status: 'novo', timestamp: new Date(Date.now() - 172800000) }, { status: 'pendenteAutorizacaoEscalado', timestamp: new Date(Date.now() - 86400000) }] },
+  { id: 'task-1', title: 'Verificar backup do servidor', description: 'Garantir que o backup noturno foi concluído.', status: 'novo', history: [{ status: 'novo', timestamp: new Date() }], location: 'Sala de Servidores', time: '10:00' },
+  { id: 'task-2', title: 'Reset de senha para usuário', description: 'Usuário: joao.silva', status: 'emAndamento', deadline: new Date(Date.now() + 86400000), history: [{ status: 'novo', timestamp: new Date(Date.now() - 3600000) }, { status: 'emAndamento', timestamp: new Date() }], location: 'Remoto', time: '14:30' },
+  { id: 'task-3', title: 'Trocar toner da impressora', description: 'Modelo HP LaserJet Pro M404dn', status: 'concluido', history: [{ status: 'novo', timestamp: new Date(Date.now() - 86400000) }, { status: 'emAndamento', timestamp: new Date(Date.now() - 7200000) }, { status: 'concluido', timestamp: new Date() }], location: 'Escritório 3º Andar', time: '11:00' },
+  { id: 'task-4', title: 'Aguardar aprovação para compra de licença', description: 'Licença do software X para o departamento Y.', status: 'pendenteAutorizacaoEscalado', history: [{ status: 'novo', timestamp: new Date(Date.now() - 172800000) }, { status: 'pendenteAutorizacaoEscalado', timestamp: new Date(Date.now() - 86400000) }], location: 'Financeiro', time: '17:00' },
 ];
 
 const statusMap: Record<TaskStatus, string> = {
@@ -66,16 +68,18 @@ const statusColorMap: Record<TaskStatus, string> = {
 };
 
 // --- COMPONENTS ---
-// TaskForm component moved to src/components/TaskForm.tsx
-
 const TaskCard = ({ task, onEdit, onDelete, onShowHistory }: { task: Task; onEdit: () => void; onDelete: () => void; onShowHistory: () => void; }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
+  
+  const lastHistoryEntry = task.history[task.history.length - 1];
+  const timestampTitle = lastHistoryEntry ? `Última atualização: ${format(lastHistoryEntry.timestamp, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })} - ${statusMap[lastHistoryEntry.status]}` : 'Sem histórico';
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <Card className={cn("bg-card group border-l-4", statusColorMap[task.status])}><CardContent className="p-4">
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} title={timestampTitle}>
+      <Card className={cn("bg-card group border-l-4 cursor-pointer", statusColorMap[task.status])} onClick={onEdit}><CardContent className="p-4">
         <div className="flex justify-between items-start"><h4 className="font-semibold mb-2">{task.title}</h4>
-          <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+          <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
               <DropdownMenuItem onClick={onShowHistory}><History className="mr-2 h-4 w-4" /> Histórico</DropdownMenuItem>
@@ -84,7 +88,8 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory }: { task: Task; onEdi
           </DropdownMenu>
         </div>
         <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
-        {task.deadline && (<p className="text-xs text-muted-foreground flex items-center"><CalendarIcon className="mr-1.5 h-3 w-3" />Prazo: {format(task.deadline, 'dd/MM/yyyy')}</p>)}
+        {task.location && (<p className="text-xs text-muted-foreground flex items-center">Local: {task.location}</p>)}
+        {task.deadline && (<p className="text-xs text-muted-foreground flex items-center"><CalendarIcon className="mr-1.5 h-3 w-3" />Prazo: {format(task.deadline, 'dd/MM/yyyy')} {task.time && `às ${task.time}`}</p>)}
       </CardContent></Card>
     </div>
   );
@@ -156,7 +161,7 @@ const TasksPage = () => {
         </Dialog>
         <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}><DialogContent>
           <DialogHeader><DialogTitle>Histórico da Tarefa</DialogTitle><DialogDescription>{selectedTask?.title}</DialogDescription></DialogHeader>
-          <ul className="space-y-2">{selectedTask?.history.map((h, i) => <li key={i} className="text-sm"><strong>{statusMap[h.status]}:</strong> {format(h.timestamp, "dd/MM/yyyy 'às' HH:mm")}</li>).reverse()}</ul>
+          <ul className="space-y-2">{selectedTask?.history.map((h, i) => <li key={i} className="text-sm"><strong>{statusMap[h.status]}:</strong> {format(h.timestamp, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</li>).reverse()}</ul>
         </DialogContent></Dialog>
       </div>
       <Tabs defaultValue="kanban">

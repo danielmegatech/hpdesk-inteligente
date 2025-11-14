@@ -23,6 +23,8 @@ const taskSchema = z.object({
   title: z.string().min(1, 'O título é obrigatório.'),
   description: z.string().optional(),
   deadline: z.date().optional(),
+  location: z.string().optional(), // New field
+  time: z.string().optional(),     // New field for time of deadline
   status: taskStatusSchema,
   history: z.array(taskHistorySchema),
 });
@@ -37,14 +39,18 @@ interface TaskFormProps {
 const TaskForm = ({ task, onSave, onOpenChange }: TaskFormProps) => {
   const form = useForm<Omit<Task, 'id' | 'history'>>({
     resolver: zodResolver(taskSchema.omit({ id: true, history: true })),
-    defaultValues: task ? { ...task } : { title: '', description: '', status: 'novo' },
+    defaultValues: task ? { ...task } : { title: '', description: '', status: 'novo', location: '', time: '' },
   });
   const onSubmit = (data: Omit<Task, 'id' | 'history'>) => { onSave(data); onOpenChange(false); form.reset(); };
   return (
     <Form {...form}><form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Título</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
       <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Descrição</FormLabel><FormControl><Textarea {...field} /></FormControl></FormItem>)} />
-      <FormField control={form.control} name="deadline" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Prazo</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn('w-[240px] pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover></FormItem>)} />
+      <FormField control={form.control} name="location" render={({ field }) => (<FormItem><FormLabel>Local</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+      <div className="flex gap-4">
+        <FormField control={form.control} name="deadline" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Data do Prazo</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover></FormItem>)} />
+        <FormField control={form.control} name="time" render={({ field }) => (<FormItem><FormLabel>Hora do Prazo</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />
+      </div>
       <Button type="submit">Salvar Tarefa</Button>
     </form></Form>
   );
