@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import MindmapFlow from '@/components/MindmapFlow';
 import MindmapHistory from '@/components/MindmapHistory';
 import { mindmapData, categories, MindmapNode } from '@/data/mindmap';
-import { PlayCircle, PlusCircle, BookOpen, Download } from 'lucide-react';
+import { PlayCircle, PlusCircle, BookOpen } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import TaskForm, { Task } from '@/components/TaskForm'; // Corrected import path
@@ -156,18 +156,6 @@ const ServicePage = () => {
     setIsAddKnowledgeOpen(true);
   };
 
-  const handleExport = () => {
-    const dataStr = JSON.stringify(mindmapData, null, 2);
-    navigator.clipboard.writeText(dataStr)
-      .then(() => {
-        toast.success('Fluxo de trabalho copiado para a área de transferência!');
-      })
-      .catch(err => {
-        console.error('Failed to copy: ', err);
-        toast.error('Falha ao copiar o fluxo de trabalho.');
-      });
-  };
-
   const renderContent = () => {
     switch (state) {
       case 'idle':
@@ -181,10 +169,6 @@ const ServicePage = () => {
               <Button onClick={handleStartService} size="lg">
                 <PlayCircle className="mr-2 h-6 w-6" />
                 Iniciar Atendimento
-              </Button>
-              <Button onClick={handleExport} size="lg" variant="outline">
-                <Download className="mr-2 h-6 w-6" />
-                Exportar Fluxo
               </Button>
             </div>
           </div>

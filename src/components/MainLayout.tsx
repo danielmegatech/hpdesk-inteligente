@@ -15,6 +15,7 @@ import { apiGetTasks, apiAddNotification, apiAddTask, apiAddArticle } from '@/ap
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Importando componentes Dialog
 import TaskForm from '@/components/TaskForm'; // Importando TaskForm
 import ArticleForm from '@/components/ArticleForm'; // Importando ArticleForm
+import { mindmapData } from '@/data/mindmap';
 
 const navItems = [
   { to: '/', label: 'Atendimento', icon: Home },
@@ -52,6 +53,18 @@ const MainLayout = () => {
   const handleTriggerAddKnowledgeFromAI = (title?: string, content?: string, category?: string) => {
     setInitialArticleDataFromAI({ title, content, category });
     setIsAddKnowledgeOpenFromAI(true);
+  };
+
+  const handleExportFlow = () => {
+    const dataStr = JSON.stringify(mindmapData, null, 2);
+    navigator.clipboard.writeText(dataStr)
+      .then(() => {
+        toast.success('Fluxo de trabalho copiado para a área de transferência!');
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err);
+        toast.error('Falha ao copiar o fluxo de trabalho.');
+      });
   };
 
   useEffect(() => {
@@ -118,6 +131,7 @@ const MainLayout = () => {
         onOpenChange={setCommandBarOpen} 
         onTriggerAddTask={handleTriggerAddTaskFromAI}
         onTriggerAddKnowledge={handleTriggerAddKnowledgeFromAI}
+        onTriggerExportFlow={handleExportFlow}
       />
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <div className="hidden border-r bg-muted/40 md:block">

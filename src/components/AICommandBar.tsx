@@ -7,7 +7,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command"
-import { BrainCircuit, Calendar, ListTodo, PlusCircle, BookOpen } from "lucide-react"
+import { BrainCircuit, Calendar, ListTodo, PlusCircle, BookOpen, Download } from "lucide-react"
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -16,9 +16,10 @@ interface AICommandBarProps {
   onOpenChange: (open: boolean) => void;
   onTriggerAddTask?: (initialTitle?: string, initialDescription?: string) => void;
   onTriggerAddKnowledge?: (initialTitle?: string, initialContent?: string, initialCategory?: string) => void;
+  onTriggerExportFlow?: () => void;
 }
 
-export function AICommandBar({ open, onOpenChange, onTriggerAddTask, onTriggerAddKnowledge }: AICommandBarProps) {
+export function AICommandBar({ open, onOpenChange, onTriggerAddTask, onTriggerAddKnowledge, onTriggerExportFlow }: AICommandBarProps) {
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
@@ -42,6 +43,8 @@ export function AICommandBar({ open, onOpenChange, onTriggerAddTask, onTriggerAd
         const categoryMatch = command.match(/categoria "(.*?)"/i);
         onTriggerAddKnowledge?.(titleMatch?.[1], contentMatch?.[1], categoryMatch?.[1]);
         toast.info("A abrir formulário de novo artigo...");
+      } else if (command.toLowerCase().includes("exportar fluxo")) {
+        onTriggerExportFlow?.();
       } else {
         toast.info(`Comando "${command}" recebido. (Funcionalidade em desenvolvimento)`);
       }
@@ -85,6 +88,10 @@ export function AICommandBar({ open, onOpenChange, onTriggerAddTask, onTriggerAd
           <CommandItem onSelect={() => handleCommand("Adicionar Conhecimento")}>
             <BookOpen className="mr-2 h-4 w-4" />
             <span>Adicionar Conhecimento</span>
+          </CommandItem>
+          <CommandItem onSelect={() => handleCommand("Exportar fluxo de trabalho")}>
+            <Download className="mr-2 h-4 w-4" />
+            <span>Exportar Fluxo de Trabalho</span>
           </CommandItem>
         </CommandGroup>
       </CommandList>
