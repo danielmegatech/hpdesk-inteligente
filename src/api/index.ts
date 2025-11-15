@@ -1,6 +1,6 @@
 import { AppNotification, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification, apiGetNotifications } from './mockApi';
 import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetTrashedTasks, apiRestoreTask, apiPermanentDeleteTask } from './supabaseTasks'; // Removido .ts
-import { apiGetReportMetrics, apiGetAuditLog } from './supabaseReports'; // Import from new reports file
+import { apiGetReportMetrics, apiGetAuditLog, apiGetResolutionChartData } from './supabaseReports'; // Import from new reports file
 
 export type { AppNotification };
 export { 
@@ -20,5 +20,6 @@ export {
   apiMarkNotificationAsRead, 
   apiDeleteNotification, 
   apiGetNotifications,
-  apiGetAuditLog // Export new audit log API
+  apiGetAuditLog,
+  apiGetResolutionChartData // Export new chart data API
 };

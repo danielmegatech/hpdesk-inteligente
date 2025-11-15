@@ -16,6 +16,7 @@ import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetTrashedTas
 import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
 import { useLocation, useSearchParams } from 'react-router-dom'; // Import useLocation and useSearchParams
+import { useSession } from '@/components/SessionContextProvider'; // Import useSession
 
 // --- TYPES AND SCHEMA ---
 const taskStatusMap = {
@@ -117,6 +118,7 @@ const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory, highligh
 };
 
 const TasksPage = () => {
+  const { user } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [trashedTasks, setTrashedTasks] = useState<Task[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -129,19 +131,23 @@ const TasksPage = () => {
   const highlightedTaskId = searchParams.get('highlight');
 
   const fetchTasks = async () => {
-    const fetchedTasks = await apiGetTasks();
+    if (!user) return;
+    const fetchedTasks = await apiGetTasks(user.id);
     setTasks(fetchedTasks);
   };
 
   const fetchTrashedTasks = async () => {
-    const fetchedTrashedTasks = await apiGetTrashedTasks();
+    if (!user) return;
+    const fetchedTrashedTasks = await apiGetTrashedTasks(user.id);
     setTrashedTasks(fetchedTrashedTasks);
   };
 
   useEffect(() => {
-    fetchTasks();
-    fetchTrashedTasks();
-  }, []);
+    if (user) {
+      fetchTasks();
+      fetchTrashedTasks();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (highlightedTaskId && activeTab === 'kanban') {
@@ -154,12 +160,13 @@ const TasksPage = () => {
   }, [highlightedTaskId, activeTab, tasks]); // Depend on tasks to ensure elements are rendered
 
   const handleSaveTask = async (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
+    if (!user) return;
     if (selectedTask) { // Edit
       const updatedTask = { ...selectedTask, ...data };
       await apiUpdateTask(updatedTask);
       toast.success(`Tarefa "${updatedTask.title}" atualizada com sucesso!`);
     } else { // Add
-      const newTask = await apiAddTask(data);
+      const newTask = await apiAddTask(data, user.id);
       if (newTask) {
         toast.success(`Tarefa "${newTask.title}" criada com sucesso!`);
       }

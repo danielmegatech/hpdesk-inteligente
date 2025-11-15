@@ -11,6 +11,8 @@ import ReportsPage from "./pages/Reports";
 import KnowledgeBasePage from "./pages/KnowledgeBase";
 import SettingsPage from "./pages/Settings";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { SessionContextProvider } from "./components/SessionContextProvider"; // Import SessionContextProvider
+import Login from "./pages/Login"; // Import Login page
 
 const queryClient = new QueryClient();
 
@@ -21,17 +23,20 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<ServicePage />} />
-              <Route path="/tasks" element={<TasksPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="/kb" element={<KnowledgeBasePage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <SessionContextProvider> {/* Wrap everything that needs session/routing */}
+            <Routes>
+              <Route path="/login" element={<Login />} /> {/* Login route */}
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<ServicePage />} />
+                <Route path="/tasks" element={<TasksPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/kb" element={<KnowledgeBasePage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </SessionContextProvider>
         </BrowserRouter>
       </ThemeProvider>
     </TooltipProvider>

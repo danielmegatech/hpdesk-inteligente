@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Home, ListTodo, BarChart3, BrainCircuit, Settings as SettingsIcon, Menu, Bot } from 'lucide-react';
+import { Home, ListTodo, BarChart3, BrainCircuit, Settings as SettingsIcon, Menu, Bot, LogOut, User } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { MadeWithDyad } from './made-with-dyad';
@@ -16,6 +16,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import TaskForm from '@/components/TaskForm'; // Importando TaskForm
 import ArticleForm from '@/components/ArticleForm'; // Importando ArticleForm
 import { mindmapData } from '@/data/mindmap';
+import { useSession } from './SessionContextProvider'; // Import useSession
+import { supabase } from '@/integrations/supabase/client'; // Import supabase client
 
 const navItems = [
   { to: '/', label: 'Atendimento', icon: Home },
@@ -36,6 +38,7 @@ const NavContent = () => (
 );
 
 const MainLayout = () => {
+  const { user, isLoading } = useSession();
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const { settings } = useSettings();
 
@@ -44,6 +47,20 @@ const MainLayout = () => {
   const [initialTaskDataFromAI, setInitialTaskDataFromAI] = useState<{ title?: string; description?: string } | undefined>(undefined);
   const [isAddKnowledgeOpenFromAI, setIsAddKnowledgeOpenFromAI] = useState(false);
   const [initialArticleDataFromAI, setInitialArticleDataFromAI] = useState<{ title?: string; content?: string; category?: string } | undefined>(undefined);
+
+  if (isLoading || !user) {
+    // If not logged in or loading, SessionContextProvider handles redirect, but we render nothing here
+    return null;
+  }
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Erro ao sair: ' + error.message);
+    } else {
+      toast.success('Sessão encerrada com sucesso.');
+    }
+  };
 
   const handleTriggerAddTaskFromAI = (title?: string, description?: string) => {
     setInitialTaskDataFromAI({ title, description });
@@ -90,7 +107,7 @@ const MainLayout = () => {
       }
 
       // Task deadline notifications (using Supabase API)
-      const allTasks = await apiGetTasks(); // Fetch tasks from Supabase
+      const allTasks = await apiGetTasks(user.id); // Pass user ID
       allTasks.forEach(task => {
         if (task.deadline && task.status !== 'concluido' && task.status !== 'lixeira') {
           const diff = task.deadline.getTime() - now.getTime();
@@ -122,7 +139,7 @@ const MainLayout = () => {
     const intervalId = setInterval(checkWorkHoursAndTasks, 3600000); // Check every hour
 
     return () => clearInterval(intervalId);
-  }, [settings]);
+  }, [settings, user.id]);
 
   return (
     <>
@@ -138,7 +155,18 @@ const MainLayout = () => {
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6"><a href="/" className="flex items-center gap-2 font-semibold"><BrainCircuit className="h-6 w-6" /><span>Helpdesk App</span></a></div>
             <div className="flex-1"><NavContent /></div>
-            <div className="mt-auto p-4"><MadeWithDyad /></div>
+            <div className="mt-auto p-4 space-y-2">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span>{user.email}</span>
+                </div>
+                <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+              <MadeWithDyad />
+            </div>
           </div>
         </div>
         <div className="flex flex-col">
@@ -147,6 +175,11 @@ const MainLayout = () => {
               <SheetContent side="left" className="flex flex-col p-0">
                  <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6"><a href="/" className="flex items-center gap-2 font-semibold"><BrainCircuit className="h-6 w-6" /><span>Helpdesk App</span></a></div>
                 <NavContent />
+                <div className="mt-auto p-4">
+                  <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" /> Sair ({user.email})
+                  </Button>
+                </div>
               </SheetContent>
             </Sheet>
             <div className="w-full flex-1 flex justify-end items-center gap-4">
@@ -165,7 +198,7 @@ const MainLayout = () => {
           <TaskForm 
             task={initialTaskDataFromAI} 
             onSave={async (data) => { // Made async
-              await apiAddTask(data); // Await the API call
+              await apiAddTask(data, user.id); // Pass user ID
               toast.success(`Tarefa "${data.title}" criada com sucesso!`);
               setIsAddTaskOpenFromAI(false);
               setInitialTaskDataFromAI(undefined);

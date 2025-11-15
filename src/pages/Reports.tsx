@@ -5,9 +5,10 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Clock, User, FileText, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { apiGetReportMetrics, apiGetAuditLog } from '@/api'; // Import mock API for reports and audit log
+import { apiGetReportMetrics, apiGetAuditLog, apiGetResolutionChartData } from '@/api'; // Import chart data API
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import ResolutionChart from '@/components/ResolutionChart'; // Import the new chart component
 
 const StatCard = ({ title, value, change, icon: Icon }: { title: string; value: string; change: string; icon: React.ElementType }) => (
   <Card>
@@ -25,11 +26,13 @@ const StatCard = ({ title, value, change, icon: Icon }: { title: string; value: 
 const ReportsPage = () => {
   const [metrics, setMetrics] = useState<any[]>([]);
   const [auditLog, setAuditLog] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
       setMetrics(await apiGetReportMetrics());
       setAuditLog(apiGetAuditLog());
+      setChartData(apiGetResolutionChartData());
     };
     loadData();
   }, []);
@@ -46,6 +49,8 @@ const ReportsPage = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full">
         {metrics.map(metric => <StatCard key={metric.title} {...metric} />)}
       </div>
+
+      <ResolutionChart data={chartData} />
 
       <Card className="w-full">
         <CardHeader>

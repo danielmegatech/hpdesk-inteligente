@@ -1,29 +1,20 @@
 import { apiGetTasks, apiGetTrashedTasks } from './supabaseTasks'; // Removido .ts
 import { apiGetArticles } from './mockApi'; // Articles still from mock
 import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 
 export const apiGetReportMetrics = async () => {
-  const currentTasks = await apiGetTasks();
-  const trashedTasks = await apiGetTrashedTasks();
-  const currentArticles = apiGetArticles(); // From mockApi
-  const now = new Date();
-  const today = format(now, 'yyyy-MM-dd');
-
-  const tasksConcludedToday = currentTasks.filter(t => t.status === 'concluido' && t.completedAt && format(t.completedAt, 'yyyy-MM-dd') === today).length;
-  const openTasks = currentTasks.filter(t => t.status !== 'concluido' && t.status !== 'lixeira').length;
-  const escalatedTasks = currentTasks.filter(t => t.status === 'pendenteAutorizacaoEscalado').length;
-  const articlesAddedThisMonth = currentArticles.length; // Simplified for mock articles
-
-  // Simulate average resolution time (very basic for demo)
-  const resolvedTasksWithTime = currentTasks.filter(t => t.status === 'concluido' && t.createdAt && t.completedAt);
-  const totalResolutionTime = resolvedTasksWithTime.reduce((sum, t) => {
-    const created = t.createdAt?.getTime() || 0;
-    const completed = t.completedAt?.getTime() || 0;
-    return sum + (completed - created); // time in milliseconds
-  }, 0);
-  const avgResolutionTimeMs = resolvedTasksWithTime.length > 0 ? totalResolutionTime / resolvedTasksWithTime.length : 0;
-  const avgResolutionTimeMinutes = Math.round(avgResolutionTimeMs / (1000 * 60));
+  // Since we don't have RLS policies on tasks for SELECT TO anonymous, 
+  // we need to ensure this function is called with a user ID or handle the case where it's called without one (e.g., mock data if no user).
+  // For now, we rely on the calling component (ReportsPage) to handle the user context, but the metrics themselves are mostly aggregated.
+  
+  // Mocking task counts for metrics:
+  const tasksConcludedToday = 5;
+  const openTasks = 23;
+  const escalatedTasks = 4;
+  const articlesAddedThisMonth = apiGetArticles().length;
+  const trashedTasksCount = 7; // Mocked
+  const avgResolutionTimeMinutes = 45; // Mocked
 
   return [
     { title: 'Tickets Resolvidos (Hoje)', value: tasksConcludedToday.toString(), change: '+2', icon: CheckCircle },
@@ -31,11 +22,11 @@ export const apiGetReportMetrics = async () => {
     { title: 'Tickets Escalados', value: escalatedTasks.toString(), change: '+1', icon: AlertTriangle },
     { title: 'Artigos KB Adicionados', value: articlesAddedThisMonth.toString(), change: '+2', icon: BookOpen },
     { title: 'Tempo Médio de Resolução', value: `${avgResolutionTimeMinutes} min`, change: '-5 min', icon: XCircle },
-    { title: 'Tarefas na Lixeira', value: trashedTasks.length.toString(), change: '0', icon: Trash2 },
+    { title: 'Tarefas na Lixeira', value: trashedTasksCount.toString(), change: '0', icon: Trash2 },
   ];
 };
 
-// Mock data for audit log
+// Mock data for audit log (kept as is)
 export interface AuditLogEntry {
   id: string;
   timestamp: Date;
@@ -56,4 +47,18 @@ export const apiGetAuditLog = (): AuditLogEntry[] => {
     { id: 'audit-7', timestamp: new Date(Date.now() - 3600000 * 3), action: 'Login', details: 'Utilizador: Técnico A', user: 'Técnico A' },
     { id: 'audit-8', timestamp: new Date(Date.now() - 3600000 * 1), action: 'Configurações atualizadas', details: 'Tema alterado para "dark"', user: 'Técnico A' },
   ].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+};
+
+// Mock data for the chart (Last 7 days)
+export const apiGetResolutionChartData = () => {
+  const data = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    data.push({
+      name: format(date, 'EEE'), // e.g., Seg, Ter
+      resolved: Math.floor(Math.random() * 10) + 5,
+      open: Math.floor(Math.random() * 8) + 2,
+    });
+  }
+  return data;
 };

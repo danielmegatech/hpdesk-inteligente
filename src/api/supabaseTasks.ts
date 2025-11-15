@@ -18,10 +18,14 @@ const mapSupabaseTaskToAppTask = (supabaseTask: any): Task => ({
 });
 
 // --- Task API using Supabase ---
-export const apiGetTasks = async (): Promise<Task[]> => {
+// Note: We assume RLS is set up to allow users to only see their own tasks, 
+// but we explicitly filter by user_id for clarity and future multi-user support.
+
+export const apiGetTasks = async (userId: string): Promise<Task[]> => {
   const { data, error } = await supabase
     .from('tasks')
     .select('*')
+    .eq('user_id', userId) // Filter by current user
     .is('deleted_at', null) // Only get tasks not in trash
     .order('created_at', { ascending: false });
 
@@ -32,13 +36,14 @@ export const apiGetTasks = async (): Promise<Task[]> => {
   return data.map(mapSupabaseTaskToAppTask);
 };
 
-export const apiGetTrashedTasks = async (): Promise<Task[]> => {
+export const apiGetTrashedTasks = async (userId: string): Promise<Task[]> => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
   const { data, error } = await supabase
     .from('tasks')
     .select('*')
+    .eq('user_id', userId) // Filter by current user
     .not('deleted_at', 'is', null) // Only get tasks in trash
     .gte('deleted_at', thirtyDaysAgo.toISOString()) // Within the last 30 days
     .order('deleted_at', { ascending: false });
@@ -50,7 +55,7 @@ export const apiGetTrashedTasks = async (): Promise<Task[]> => {
   return data.map(mapSupabaseTaskToAppTask);
 };
 
-export const apiAddTask = async (newTaskData: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>): Promise<Task | null> => {
+export const apiAddTask = async (newTaskData: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>, userId: string): Promise<Task | null> => {
   const { data, error } = await supabase
     .from('tasks')
     .insert({
@@ -62,7 +67,7 @@ export const apiAddTask = async (newTaskData: Omit<Task, 'id' | 'history' | 'cre
       status: newTaskData.status,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      // user_id: 'current_user_id' // Uncomment and set when auth is ready
+      user_id: userId, // Set user ID
     })
     .select()
     .single();
@@ -75,6 +80,7 @@ export const apiAddTask = async (newTaskData: Omit<Task, 'id' | 'history' | 'cre
 };
 
 export const apiUpdateTask = async (updatedTaskData: Task): Promise<Task | null> => {
+  // Note: RLS should prevent users from updating tasks they don't own.
   const { data, error } = await supabase
     .from('tasks')
     .update({
