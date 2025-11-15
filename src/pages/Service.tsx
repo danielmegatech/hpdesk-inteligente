@@ -1,20 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import MindmapFlow from '@/components/MindmapFlow';
 import MindmapHistory from '@/components/MindmapHistory';
-import { mindmapData, categories, MindmapNode } from '@/data/mindmap';
+import { categories, MindmapNode } from '@/data/mindmap';
 import { PlayCircle, PlusCircle, BookOpen } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import TaskForm, { Task } from '@/components/TaskForm'; // Corrected import path
-import ArticleForm, { Article } from '@/components/ArticleForm'; // Corrected import path
+import TaskForm, { Task } from '@/components/TaskForm';
+import ArticleForm, { Article } from '@/components/ArticleForm';
 import { toast } from 'sonner';
-import ActiveServiceCard from '@/components/ActiveServiceCard'; // Import ActiveServiceCard
-import { apiAddTask, apiAddArticle, apiGetArticles } from '@/api'; // Import mock API
+import ActiveServiceCard from '@/components/ActiveServiceCard';
+import { apiAddTask, apiAddArticle, apiGetArticles } from '@/api';
+import { useMindmap } from '@/context/MindmapContext';
 
 type ServiceState = 'idle' | 'selecting_category' | 'in_flow';
 
 const ServicePage = () => {
+  const { mindmapData } = useMindmap();
   const [state, setState] = useState<ServiceState>('idle');
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
   const [history, setHistory] = useState<MindmapNode[]>([]);
@@ -23,11 +25,8 @@ const ServicePage = () => {
   const [activeServiceStatus, setActiveServiceStatus] = useState<'active' | 'resolved' | 'escalated'>('active');
   const [escalatedResolver, setEscalatedResolver] = useState<string | undefined>(undefined);
   const [kbSuggestions, setKbSuggestions] = useState<Article[]>([]);
-
-  // State for initial form data when triggered from Service page
   const [initialTaskTitle, setInitialTaskTitle] = useState<string | undefined>(undefined);
   const [initialArticleTitle, setInitialArticleTitle] = useState<string | undefined>(undefined);
-
 
   const handleStartService = () => {
     setState('selecting_category');
@@ -43,7 +42,7 @@ const ServicePage = () => {
   const handleCategorySelect = (startNodeId: string) => {
     const startNode = mindmapData[startNodeId];
     setCurrentNodeId(startNodeId);
-    setHistory([startNode]); // Start history with the selected category's first node
+    setHistory([startNode]);
     setState('in_flow');
     setActiveServiceStatus('active');
     setKbSuggestions([]);
@@ -55,7 +54,7 @@ const ServicePage = () => {
     setState('idle');
     setCurrentNodeId(null);
     setHistory([]);
-    setActiveServiceStatus('resolved'); // Mark as resolved when resetting
+    setActiveServiceStatus('resolved');
     setEscalatedResolver(undefined);
     setKbSuggestions([]);
     setInitialTaskTitle(undefined);
@@ -64,14 +63,13 @@ const ServicePage = () => {
 
   const handleBack = () => {
     if (history.length > 1) {
-      const newHistory = history.slice(0, -1); // Remove current node from history
+      const newHistory = history.slice(0, -1);
       const previousNode = newHistory[newHistory.length - 1];
       setHistory(newHistory);
       setCurrentNodeId(previousNode.id);
       setActiveServiceStatus('active');
       setKbSuggestions([]);
     } else {
-      // If only one item in history, go back to category selection
       handleBackToCategories();
     }
   }
@@ -92,16 +90,15 @@ const ServicePage = () => {
       if (nextNode.id.startsWith('end_')) {
         if (nextNode.id === 'end_escalar_tecnico') {
           setActiveServiceStatus('escalated');
-          setEscalatedResolver('Técnico Especializado'); // Simulate who resolved it
+          setEscalatedResolver('Técnico Especializado');
         } else {
           setActiveServiceStatus('resolved');
         }
-        // Suggest KB articles if it's an end node that isn't a direct resolution
         if (nextNode.id !== 'end_success' && nextNode.id !== 'end_escalar_tecnico') {
           const relevantArticles = apiGetArticles().filter(article => 
             nextNode.question.toLowerCase().includes(article.category.toLowerCase()) ||
             article.content.toLowerCase().includes(nextNode.question.toLowerCase())
-          ).slice(0, 3); // Limit to 3 suggestions
+          ).slice(0, 3);
           setKbSuggestions(relevantArticles);
         } else {
           setKbSuggestions([]);
@@ -125,14 +122,14 @@ const ServicePage = () => {
     apiAddTask(data);
     toast.success(`Tarefa "${data.title}" criada com sucesso!`);
     setIsAddTaskOpen(false);
-    setInitialTaskTitle(undefined); // Clear after saving
+    setInitialTaskTitle(undefined);
   };
 
   const handleSaveNewArticle = (data: Omit<Article, 'id'>) => {
     apiAddArticle(data);
     toast.success(`Artigo "${data.title}" adicionado à Base de Conhecimento!`);
     setIsAddKnowledgeOpen(false);
-    setInitialArticleTitle(undefined); // Clear after saving
+    setInitialArticleTitle(undefined);
   };
 
   const getCategorySubthemes = (categoryId: string) => {
@@ -183,7 +180,7 @@ const ServicePage = () => {
                   key={cat.id} 
                   className="flex flex-col items-center justify-center p-6 hover:bg-accent hover:shadow-lg transition-all cursor-pointer"
                   onClick={() => handleCategorySelect(cat.startNodeId)}
-                  title={getCategorySubthemes(cat.id)} // Subthemes on hover
+                  title={getCategorySubthemes(cat.id)}
                 >
                   <cat.icon className="h-10 w-10 mb-3 text-primary" />
                   <CardHeader className="p-0">
@@ -243,7 +240,6 @@ const ServicePage = () => {
     <div className="flex flex-col items-center justify-center w-full h-full p-4">
       {renderContent()}
 
-      {/* Modals for Add Task and Add Knowledge */}
       <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Criar Nova Tarefa</DialogTitle></DialogHeader>

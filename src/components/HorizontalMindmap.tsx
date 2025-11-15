@@ -1,14 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { mindmapData } from "@/data/mindmap";
+import { useMindmap } from "@/context/MindmapContext";
 import { ArrowRight } from "lucide-react";
 
-const sampleHistory = [
-  mindmapData['computer_start'],
-  mindmapData['computer_power_issue'],
-  mindmapData['end_ticket_power_supply'],
-];
-
 const HorizontalMindmap = () => {
+  const { mindmapData } = useMindmap();
+
+  const sampleHistory = [
+    mindmapData['computer_start'],
+    mindmapData['computer_power_issue'],
+    mindmapData['end_ticket_power_supply'],
+  ].filter(Boolean); // Filter out undefined nodes if the imported map is different
+
   return (
     <Card className="w-full">
       <CardHeader>
