@@ -425,6 +425,10 @@ export const mindmapData: Record<string, MindmapNode> = {
       { text: 'Outro', nextNodeId: 'end_ticket_software_academico_geral' },
     ],
   },
+  
+  // --- Others Flow ---
+  'others_start': { id: 'others_start', question: 'Por favor, descreva o problema.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+
 
   // --- End Nodes (expanded and adjusted to European Portuguese) ---
   'end_success': { id: 'end_success', question: 'Problema resolvido com sucesso!', options: [] },

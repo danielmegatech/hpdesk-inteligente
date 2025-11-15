@@ -145,6 +145,10 @@ const ServicePage = () => {
     const startNodeId = categories.find(cat => cat.id === categoryId)?.startNodeId;
     if (!startNodeId) return '';
     const startNode = mindmapData[startNodeId];
+    
+    // Check if startNode exists before accessing its properties
+    if (!startNode) return 'Nenhum subtema definido.'; 
+    
     return startNode.options.map(opt => opt.text).join(', ');
   };
 
