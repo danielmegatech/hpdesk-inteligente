@@ -36,6 +36,12 @@ const statusColorMap: Record<TaskStatus, string> = {
   lixeira: 'border-red-500',
 };
 
+const priorityMap: Record<string, { text: string; className: string }> = {
+  'Baixa': { text: 'Baixa', className: 'bg-gray-500' },
+  'Média': { text: 'Média', className: 'bg-yellow-500' },
+  'Alta': { text: 'Alta', className: 'text-white bg-red-500' },
+};
+
 // --- COMPONENTS ---
 const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanentDelete, isTrashed = false, highlight = false }: { 
   task: Task; 
@@ -54,28 +60,37 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanen
                          `Última atualização: ${format(task.updatedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` +
                          (task.completedAt ? `Concluído: ${format(task.completedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` : '') +
                          `Status: ${taskStatusMap[task.status]}`;
+  
+  const priorityInfo = priorityMap[task.priority || 'Média'];
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} title={timestampTitle} data-id={task.id}> {/* Add data-id for highlighting */}
       <Card className={cn("bg-card group border-l-4 cursor-pointer", statusColorMap[task.status], { 'ring-4 ring-blue-500 ring-offset-2': highlight })} onClick={onEdit}><CardContent className="p-4">
-        <div className="flex justify-between items-start"><h4 className="font-semibold mb-2">{task.title}</h4>
-          <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {!isTrashed && (
-                <>
-                  <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
-                  <DropdownMenuItem onClick={onShowHistory}><History className="mr-2 h-4 w-4" /> Histórico</DropdownMenuItem>
-                  <DropdownMenuItem onClick={onDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Mover para Lixeira</DropdownMenuItem>
-                </>
-              )}
-              {isTrashed && (
-                <>
-                  <DropdownMenuItem onClick={onRestore}><RotateCcw className="mr-2 h-4 w-4" /> Restaurar</DropdownMenuItem>
-                  <DropdownMenuItem onClick={onPermanentDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Excluir Permanentemente</DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex justify-between items-start"><h4 className="font-semibold mb-2 flex-1 pr-2">{task.title}</h4>
+          <div className="flex items-center gap-2">
+            {task.priority && (
+              <span className={cn('px-2 py-0.5 text-xs rounded-full text-white', priorityInfo.className)}>
+                {priorityInfo.text}
+              </span>
+            )}
+            <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {!isTrashed && (
+                  <>
+                    <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
+                    <DropdownMenuItem onClick={onShowHistory}><History className="mr-2 h-4 w-4" /> Histórico</DropdownMenuItem>
+                    <DropdownMenuItem onClick={onDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Mover para Lixeira</DropdownMenuItem>
+                  </>
+                )}
+                {isTrashed && (
+                  <>
+                    <DropdownMenuItem onClick={onRestore}><RotateCcw className="mr-2 h-4 w-4" /> Restaurar</DropdownMenuItem>
+                    <DropdownMenuItem onClick={onPermanentDelete} className="text-red-500"><Trash2 className="mr-2 h-4 w-4" /> Excluir Permanentemente</DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
         {task.location && (<p className="text-xs text-muted-foreground flex items-center">Local: {task.location}</p>)}

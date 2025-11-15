@@ -11,6 +11,7 @@ const mapSupabaseTaskToAppTask = (supabaseTask: any): Task => ({
   location: supabaseTask.location || '',
   time: supabaseTask.time || '',
   status: supabaseTask.status,
+  priority: supabaseTask.priority || 'Média',
   createdAt: new Date(supabaseTask.created_at),
   updatedAt: new Date(supabaseTask.updated_at),
   completedAt: supabaseTask.completed_at ? new Date(supabaseTask.completed_at) : undefined,
@@ -65,6 +66,7 @@ export const apiAddTask = async (newTaskData: Omit<Task, 'id' | 'history' | 'cre
       location: newTaskData.location,
       time: newTaskData.time,
       status: newTaskData.status,
+      priority: newTaskData.priority,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       user_id: userId, // Set user ID
@@ -90,6 +92,7 @@ export const apiUpdateTask = async (updatedTaskData: Task): Promise<Task | null>
       location: updatedTaskData.location,
       time: updatedTaskData.time,
       status: updatedTaskData.status,
+      priority: updatedTaskData.priority,
       updated_at: new Date().toISOString(),
       completed_at: updatedTaskData.status === 'concluido' ? new Date().toISOString() : null,
       deleted_at: updatedTaskData.status === 'lixeira' ? new Date().toISOString() : null, // Set deleted_at if moving to trash
