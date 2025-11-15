@@ -11,10 +11,14 @@ import ArticleForm, { Article } from '@/components/ArticleForm'; // Corrected im
 import { toast } from 'sonner';
 import ActiveServiceCard from '@/components/ActiveServiceCard'; // Import ActiveServiceCard
 import { apiAddTask, apiAddArticle, apiGetArticles } from '@/api'; // Import mock API
+import { useSession } from '@/components/SessionContextProvider'; // Import useSession
 
 type ServiceState = 'idle' | 'selecting_category' | 'in_flow';
 
 const ServicePage = () => {
+  const { user } = useSession();
+  const currentUserId = user?.id || 'anonymous_user_id';
+  
   const [state, setState] = useState<ServiceState>('idle');
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
   const [history, setHistory] = useState<MindmapNode[]>([]);
@@ -121,9 +125,11 @@ const ServicePage = () => {
     handleSelectOption('end_escalar_tecnico');
   };
 
-  const handleSaveNewTask = (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
-    apiAddTask(data);
-    toast.success(`Tarefa "${data.title}" criada com sucesso!`);
+  const handleSaveNewTask = async (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
+    const newTask = await apiAddTask(data, currentUserId);
+    if (newTask) {
+      toast.success(`Tarefa "${data.title}" criada com sucesso!`);
+    }
     setIsAddTaskOpen(false);
     setInitialTaskTitle(undefined); // Clear after saving
   };

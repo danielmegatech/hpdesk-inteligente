@@ -25,14 +25,15 @@ const App = () => (
         <BrowserRouter>
           <SessionContextProvider> {/* Wrap everything that needs session/routing */}
             <Routes>
-              <Route path="/login" element={<Login />} /> {/* Login route */}
-              <Route element={<MainLayout />}>
-                <Route path="/" element={<ServicePage />} />
+              {/* Temporarily remove the Login route and make MainLayout the default */}
+              <Route path="/" element={<MainLayout />}>
+                <Route index element={<ServicePage />} />
                 <Route path="/tasks" element={<TasksPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/kb" element={<KnowledgeBasePage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
+              <Route path="/login" element={<Login />} /> {/* Keep login page accessible if needed */}
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

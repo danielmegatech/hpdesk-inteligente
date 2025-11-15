@@ -27,13 +27,18 @@ const navItems = [
   { to: '/settings', label: 'Ajustes', icon: SettingsIcon },
 ];
 
-const NavContent = () => (
+const NavContent = ({ handleLogout, userEmail }: { handleLogout: () => void, userEmail: string | null }) => (
   <nav className="flex flex-col p-4 space-y-2">
     {navItems.map((item) => (
       <NavLink key={item.to} to={item.to} className={({ isActive }) => `flex items-center p-2 rounded-lg transition-colors ${ isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground' }`} end>
         <item.icon className="w-5 h-5 mr-3" />{item.label}
       </NavLink>
     ))}
+    {userEmail && (
+      <Button variant="ghost" className="w-full justify-start mt-4" onClick={handleLogout}>
+        <LogOut className="h-4 w-4 mr-2" /> Sair ({userEmail})
+      </Button>
+    )}
   </nav>
 );
 
@@ -48,10 +53,10 @@ const MainLayout = () => {
   const [isAddKnowledgeOpenFromAI, setIsAddKnowledgeOpenFromAI] = useState(false);
   const [initialArticleDataFromAI, setInitialArticleDataFromAI] = useState<{ title?: string; content?: string; category?: string } | undefined>(undefined);
 
-  if (isLoading || !user) {
-    // If not logged in or loading, SessionContextProvider handles redirect, but we render nothing here
-    return null;
-  }
+  // We no longer return null if !user, allowing direct access.
+  // However, we need a placeholder user ID for API calls if not logged in.
+  const currentUserId = user?.id || 'anonymous_user_id';
+  const userEmail = user?.email || 'Convidado';
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -85,7 +90,9 @@ const MainLayout = () => {
   };
 
   useEffect(() => {
-    const checkWorkHoursAndTasks = async () => { // Made async
+    if (currentUserId === 'anonymous_user_id') return; // Skip notifications for anonymous access
+
+    const checkWorkHoursAndTasks = async () => {
       const now = new Date();
       const today = now.toDateString();
       const [startHour, startMinute] = settings.workStartTime.split(':').map(Number);
@@ -107,7 +114,7 @@ const MainLayout = () => {
       }
 
       // Task deadline notifications (using Supabase API)
-      const allTasks = await apiGetTasks(user.id); // Pass user ID
+      const allTasks = await apiGetTasks(currentUserId); // Use currentUserId
       allTasks.forEach(task => {
         if (task.deadline && task.status !== 'concluido' && task.status !== 'lixeira') {
           const diff = task.deadline.getTime() - now.getTime();
@@ -139,7 +146,7 @@ const MainLayout = () => {
     const intervalId = setInterval(checkWorkHoursAndTasks, 3600000); // Check every hour
 
     return () => clearInterval(intervalId);
-  }, [settings, user.id]);
+  }, [settings, currentUserId]);
 
   return (
     <>
@@ -154,16 +161,18 @@ const MainLayout = () => {
         <div className="hidden border-r bg-muted/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6"><a href="/" className="flex items-center gap-2 font-semibold"><BrainCircuit className="h-6 w-6" /><span>Helpdesk App</span></a></div>
-            <div className="flex-1"><NavContent /></div>
+            <div className="flex-1"><NavContent handleLogout={handleLogout} userEmail={user?.email || null} /></div>
             <div className="mt-auto p-4 space-y-2">
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  <span>{user.email}</span>
+                  <span>{userEmail}</span>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
-                  <LogOut className="h-4 w-4" />
-                </Button>
+                {user && (
+                  <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
               <MadeWithDyad />
             </div>
@@ -174,12 +183,7 @@ const MainLayout = () => {
             <Sheet><SheetTrigger asChild><Button variant="outline" size="icon" className="shrink-0 md:hidden"><Menu className="h-5 w-5" /><span className="sr-only">Toggle navigation menu</span></Button></SheetTrigger>
               <SheetContent side="left" className="flex flex-col p-0">
                  <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6"><a href="/" className="flex items-center gap-2 font-semibold"><BrainCircuit className="h-6 w-6" /><span>Helpdesk App</span></a></div>
-                <NavContent />
-                <div className="mt-auto p-4">
-                  <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-                    <LogOut className="h-4 w-4 mr-2" /> Sair ({user.email})
-                  </Button>
-                </div>
+                <NavContent handleLogout={handleLogout} userEmail={user?.email || null} />
               </SheetContent>
             </Sheet>
             <div className="w-full flex-1 flex justify-end items-center gap-4">
@@ -198,7 +202,7 @@ const MainLayout = () => {
           <TaskForm 
             task={initialTaskDataFromAI} 
             onSave={async (data) => { // Made async
-              await apiAddTask(data, user.id); // Pass user ID
+              await apiAddTask(data, currentUserId); // Pass currentUserId
               toast.success(`Tarefa "${data.title}" criada com sucesso!`);
               setIsAddTaskOpenFromAI(false);
               setInitialTaskDataFromAI(undefined);

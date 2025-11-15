@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface SessionContextType {
@@ -28,22 +27,12 @@ export const SessionContextProvider: React.FC<SessionContextProviderProps> = ({ 
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
-
-      const isLoginPage = location.pathname === '/login';
-
-      if (event === 'SIGNED_IN' && isLoginPage) {
-        navigate('/');
-      } else if (event === 'SIGNED_OUT' && !isLoginPage) {
-        navigate('/login');
-      }
     });
 
     // Initial session check
@@ -51,17 +40,10 @@ export const SessionContextProvider: React.FC<SessionContextProviderProps> = ({ 
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
-      
-      const isLoginPage = location.pathname === '/login';
-      if (session && isLoginPage) {
-        navigate('/');
-      } else if (!session && !isLoginPage) {
-        navigate('/login');
-      }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, location.pathname]);
+  }, []);
 
   const value = { session, user, isLoading };
 
