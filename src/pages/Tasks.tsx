@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react'; // Import useRef
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { CalendarIcon, Edit, MoreVertical, PlusCircle, Trash2, History, RotateCcw, Flame, ArrowDown, ArrowUp, ChevronsUp } from 'lucide-react';
+import { CalendarIcon, Edit, MoreVertical, PlusCircle, Trash2, History, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -15,10 +15,10 @@ import TaskForm, { Task } from '@/components/TaskForm';
 import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetTrashedTasks, apiRestoreTask, apiPermanentDeleteTask } from '@/api';
 import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
-import { useLocation, useSearchParams } from 'react-router-dom';
-import { useSession } from '@/components/SessionContextProvider';
-import { Badge } from '@/components/ui/badge';
+import { useLocation, useSearchParams } from 'react-router-dom'; // Import useLocation and useSearchParams
+import { useSession } from '@/components/SessionContextProvider'; // Import useSession
 
+// --- TYPES AND SCHEMA ---
 const taskStatusMap = {
   novo: 'Novo',
   emAndamento: 'Em Andamento',
@@ -36,13 +36,7 @@ const statusColorMap: Record<TaskStatus, string> = {
   lixeira: 'border-red-500',
 };
 
-const priorityMap: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  'Baixa': { label: 'Baixa', color: 'bg-blue-500 hover:bg-blue-600', icon: ArrowDown },
-  'Média': { label: 'Média', color: 'bg-yellow-500 hover:bg-yellow-600', icon: ArrowUp },
-  'Alta': { label: 'Alta', color: 'bg-orange-500 hover:bg-orange-600', icon: ChevronsUp },
-  'Urgente': { label: 'Urgente', color: 'bg-red-500 hover:bg-red-600', icon: Flame },
-};
-
+// --- COMPONENTS ---
 const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanentDelete, isTrashed = false, highlight = false }: { 
   task: Task; 
   onEdit: () => void; 
@@ -51,11 +45,10 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanen
   onRestore?: () => void; 
   onPermanentDelete?: () => void;
   isTrashed?: boolean;
-  highlight?: boolean;
+  highlight?: boolean; // New prop for highlighting
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
-  const priorityInfo = priorityMap[task.priority || 'Média'] || priorityMap['Média'];
   
   const timestampTitle = `Criado: ${format(task.createdAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` +
                          `Última atualização: ${format(task.updatedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}\n` +
@@ -63,7 +56,7 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanen
                          `Status: ${taskStatusMap[task.status]}`;
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} title={timestampTitle} data-id={task.id}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} title={timestampTitle} data-id={task.id}> {/* Add data-id for highlighting */}
       <Card className={cn("bg-card group border-l-4 cursor-pointer", statusColorMap[task.status], { 'ring-4 ring-blue-500 ring-offset-2': highlight })} onClick={onEdit}><CardContent className="p-4">
         <div className="flex justify-between items-start"><h4 className="font-semibold mb-2">{task.title}</h4>
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
@@ -84,19 +77,9 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanen
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{task.description}</p>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex flex-col gap-1">
-            {task.location && (<p className="flex items-center">Local: {task.location}</p>)}
-            {task.deadline && (<p className="flex items-center"><CalendarIcon className="mr-1.5 h-3 w-3" />Prazo: {format(task.deadline, 'dd/MM/yyyy')} {task.time && `às ${task.time}`}</p>)}
-          </div>
-          {task.priority && !isTrashed && (
-            <Badge className={cn("flex items-center gap-1 text-white", priorityInfo.color)}>
-              <priorityInfo.icon className="h-3 w-3" />
-              {priorityInfo.label}
-            </Badge>
-          )}
-        </div>
+        <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
+        {task.location && (<p className="text-xs text-muted-foreground flex items-center">Local: {task.location}</p>)}
+        {task.deadline && (<p className="text-xs text-muted-foreground flex items-center"><CalendarIcon className="mr-1.5 h-3 w-3" />Prazo: {format(task.deadline, 'dd/MM/yyyy')} {task.time && `às ${task.time}`}</p>)}
       </CardContent></Card>
     </div>
   );
@@ -108,10 +91,10 @@ const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory, highligh
   onEdit: (task: Task) => void; 
   onDelete: (task: Task) => void; 
   onShowHistory: (task: Task) => void; 
-  highlightedTaskId?: string;
+  highlightedTaskId?: string; // New prop for highlighted task
 }) => {
   const { setNodeRef } = useSortable({ id: status, data: { type: 'container' } });
-  const columnRef = useRef<HTMLDivElement>(null);
+  const columnRef = useRef<HTMLDivElement>(null); // Ref for the column
 
   useEffect(() => {
     if (highlightedTaskId) {
@@ -120,12 +103,12 @@ const KanbanColumn = ({ status, tasks, onEdit, onDelete, onShowHistory, highligh
         highlightedTaskElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [highlightedTaskId, tasks]);
+  }, [highlightedTaskId, tasks]); // Re-run when tasks or highlightedTaskId changes
 
   return (
     <div ref={setNodeRef} className="flex flex-col w-full md:w-1/5 bg-muted/60 p-4 rounded-lg min-h-[200px]">
       <h3 className="text-lg font-semibold mb-4">{taskStatusMap[status]} ({tasks.length})</h3>
-      <div ref={columnRef} className="space-y-3 flex-grow">
+      <div ref={columnRef} className="space-y-3 flex-grow"> {/* Apply ref here */}
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map(task => <TaskCard key={task.id} task={task} onEdit={() => onEdit(task)} onDelete={() => onDelete(task)} onShowHistory={() => onShowHistory(task)} highlight={task.id === highlightedTaskId} />)}
         </SortableContext>
@@ -168,31 +151,32 @@ const TasksPage = () => {
 
   useEffect(() => {
     if (highlightedTaskId && activeTab === 'kanban') {
+      // Find the task and scroll to it
       const taskElement = document.querySelector(`[data-id="${highlightedTaskId}"]`);
       if (taskElement) {
         taskElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [highlightedTaskId, activeTab, tasks]);
+  }, [highlightedTaskId, activeTab, tasks]); // Depend on tasks to ensure elements are rendered
 
   const handleSaveTask = async (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
     if (!user) return;
-    if (selectedTask) {
+    if (selectedTask) { // Edit
       const updatedTask = { ...selectedTask, ...data };
-      await apiUpdateTask(updatedTask as Task);
+      await apiUpdateTask(updatedTask);
       toast.success(`Tarefa "${updatedTask.title}" atualizada com sucesso!`);
-    } else {
+    } else { // Add
       const newTask = await apiAddTask(data, user.id);
       if (newTask) {
         toast.success(`Tarefa "${newTask.title}" criada com sucesso!`);
       }
     }
-    fetchTasks();
+    fetchTasks(); // Refresh tasks from API
     setSelectedTask(undefined);
   };
 
   const handleDeleteTask = async (taskToDelete: Task) => {
-    await apiDeleteTask(taskToDelete.id);
+    await apiDeleteTask(taskToDelete.id); // Moves to trash
     toast.info(`Tarefa "${taskToDelete.title}" movida para a lixeira.`);
     fetchTasks();
     fetchTrashedTasks();
@@ -228,9 +212,9 @@ const TasksPage = () => {
     if (!overContainer || activeTask.status === overContainer) return;
 
     const updatedTask = { ...activeTask, status: overContainer };
-    await apiUpdateTask(updatedTask);
+    await apiUpdateTask(updatedTask); // Update via API
     toast.info(`Tarefa "${updatedTask.title}" movida para "${taskStatusMap[updatedTask.status]}".`);
-    fetchTasks();
+    fetchTasks(); // Refresh tasks from API
   };
 
   const tasksByStatus = (status: TaskStatus) => tasks.filter(t => t.status === status);
@@ -244,6 +228,7 @@ const TasksPage = () => {
         </Dialog>
         <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}><DialogContent>
           <DialogHeader><DialogTitle>Histórico da Tarefa</DialogTitle><DialogDescription>{selectedTask?.title}</DialogDescription></DialogHeader>
+          {/* History from Supabase would require a separate table/query. For now, this is mock data. */}
           <ul className="space-y-2">{selectedTask?.history.map((h, i) => <li key={i} className="text-sm"><strong>{taskStatusMap[h.status]}:</strong> {format(h.timestamp, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</li>).reverse()}</ul>
         </DialogContent></Dialog>
       </div>
@@ -251,7 +236,7 @@ const TasksPage = () => {
         <TabsList><TabsTrigger value="kanban">Kanban</TabsTrigger><TabsTrigger value="calendar">Calendário</TabsTrigger><TabsTrigger value="trash">Lixeira</TabsTrigger></TabsList>
         <TabsContent value="kanban">
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <div className="flex flex-col md:flex-row gap-6 mt-4 overflow-x-auto pb-4">
+            <div className="flex flex-col md:flex-row gap-6 mt-4">
               {(Object.keys(taskStatusMap) as TaskStatus[]).filter(status => status !== 'lixeira').map(status => (
                 <KanbanColumn key={status} status={status} tasks={tasksByStatus(status)} onEdit={handleOpenEdit} onDelete={handleDeleteTask} onShowHistory={handleShowHistory} highlightedTaskId={highlightedTaskId || undefined} />
               ))}
@@ -263,8 +248,8 @@ const TasksPage = () => {
             components={{ Day: ({ date }) => {
               const tasksOnDay = tasks.filter(t => t.deadline && format(t.deadline, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'));
               return (
-                <div className="relative text-center h-full w-full flex items-center justify-center">
-                  <span>{format(date, 'd')}</span>
+                <div className="relative text-center">
+                  {format(date, 'd')}
                   {tasksOnDay.length > 0 && (
                     <div className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1.5 w-1.5 bg-blue-500 rounded-full" title={tasksOnDay.map(t => `${t.title} (${t.time || 'sem hora'})`).join('\n')} />
                   )}
@@ -283,8 +268,8 @@ const TasksPage = () => {
                   <TaskCard 
                     key={task.id} 
                     task={task} 
-                    onEdit={() => {}} 
-                    onDelete={() => {}} 
+                    onEdit={() => { /* No edit in trash */ }} 
+                    onDelete={() => { /* No delete in trash */ }} 
                     onShowHistory={() => handleShowHistory(task)} 
                     onRestore={() => handleRestoreTask(task)}
                     onPermanentDelete={() => handlePermanentDeleteTask(task)}
