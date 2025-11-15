@@ -1,24 +1,27 @@
 import { useState, useEffect } from 'react';
 
-interface Settings {
+export interface Settings {
   workStartTime: string;
   workEndTime: string;
-  breakStartTime: string; // New field for break start time
-  breakEndTime: string;   // New field for break end time
+  breakStartTime: string;
+  breakEndTime: string;
+  workShift: '1' | '2' | '3';
 }
 
 const defaultSettings: Settings = {
   workStartTime: '09:00',
   workEndTime: '18:00',
-  breakStartTime: '13:00', // Default break start
-  breakEndTime: '14:00',   // Default break end (1 hour)
+  breakStartTime: '13:00',
+  breakEndTime: '14:00',
+  workShift: '2',
 };
 
 export const useSettings = () => {
   const [settings, setSettings] = useState<Settings>(() => {
     try {
       const storedSettings = localStorage.getItem('app-settings');
-      return storedSettings ? JSON.parse(storedSettings) : defaultSettings;
+      const parsedSettings = storedSettings ? JSON.parse(storedSettings) : {};
+      return { ...defaultSettings, ...parsedSettings };
     } catch (error) {
       console.error("Failed to parse settings from localStorage, using default.", error);
       return defaultSettings;

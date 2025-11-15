@@ -7,13 +7,22 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useSettings } from '@/hooks/use-settings';
 
+const shiftSettings = {
+  '1': { workStartTime: '07:00', workEndTime: '17:00', breakStartTime: '12:00', breakEndTime: '13:00' },
+  '2': { workStartTime: '09:00', workEndTime: '18:00', breakStartTime: '13:00', breakEndTime: '14:00' },
+  '3': { workStartTime: '14:00', workEndTime: '22:00', breakStartTime: '20:00', breakEndTime: '21:00' },
+};
+
 const SettingsPage = () => {
   const { theme, setTheme } = useTheme();
   const { settings, setSettings } = useSettings();
 
-  const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setSettings(prev => ({ ...prev, [id]: value }));
+  const handleShiftChange = (value: '1' | '2' | '3') => {
+    setSettings({
+      ...settings,
+      workShift: value,
+      ...shiftSettings[value],
+    });
   };
 
   return (
@@ -28,12 +37,22 @@ const SettingsPage = () => {
         </CardContent>
       </Card>
       <Card>
-        <CardHeader><CardTitle>Horário de Trabalho e Intervalo</CardTitle><CardDescription>Defina o seu horário para notificações inteligentes.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Turno de Trabalho</CardTitle><CardDescription>Selecione o seu turno para notificações e agendamentos inteligentes.</CardDescription></CardHeader>
+        <CardContent>
+          <RadioGroup value={settings.workShift} onValueChange={(value) => handleShiftChange(value as '1' | '2' | '3')}>
+            <div className="flex items-center space-x-2"><RadioGroupItem value="1" id="shift1" /><Label htmlFor="shift1">Turno 1 (07:00 - 17:00, Almoço: 12:00-13:00)</Label></div>
+            <div className="flex items-center space-x-2"><RadioGroupItem value="2" id="shift2" /><Label htmlFor="shift2">Turno 2 (09:00 - 18:00, Almoço: 13:00-14:00)</Label></div>
+            <div className="flex items-center space-x-2"><RadioGroupItem value="3" id="shift3" /><Label htmlFor="shift3">Turno 3 (14:00 - 22:00, Janta: 20:00-21:00)</Label></div>
+          </RadioGroup>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle>Horário Detalhado</CardTitle><CardDescription>Horário definido pelo turno selecionado.</CardDescription></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="space-y-2"><Label htmlFor="workStartTime">Início do Turno</Label><Input id="workStartTime" type="time" value={settings.workStartTime} onChange={handleSettingsChange} /></div>
-          <div className="space-y-2"><Label htmlFor="workEndTime">Fim do Turno</Label><Input id="workEndTime" type="time" value={settings.workEndTime} onChange={handleSettingsChange} /></div>
-          <div className="space-y-2"><Label htmlFor="breakStartTime">Início do Intervalo</Label><Input id="breakStartTime" type="time" value={settings.breakStartTime} onChange={handleSettingsChange} /></div>
-          <div className="space-y-2"><Label htmlFor="breakEndTime">Fim do Intervalo</Label><Input id="breakEndTime" type="time" value={settings.breakEndTime} onChange={handleSettingsChange} /></div>
+          <div className="space-y-2"><Label htmlFor="workStartTime">Início do Turno</Label><Input id="workStartTime" type="time" value={settings.workStartTime} readOnly /></div>
+          <div className="space-y-2"><Label htmlFor="workEndTime">Fim do Turno</Label><Input id="workEndTime" type="time" value={settings.workEndTime} readOnly /></div>
+          <div className="space-y-2"><Label htmlFor="breakStartTime">Início do Intervalo</Label><Input id="breakStartTime" type="time" value={settings.breakStartTime} readOnly /></div>
+          <div className="space-y-2"><Label htmlFor="breakEndTime">Fim do Intervalo</Label><Input id="breakEndTime" type="time" value={settings.breakEndTime} readOnly /></div>
         </CardContent>
       </Card>
       <Card>
