@@ -9,6 +9,8 @@ import { apiGetReportMetrics, apiGetAuditLog, apiGetResolutionChartData } from '
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ResolutionChart from '@/components/ResolutionChart'; // Import the new chart component
+import DraggableMindmap from '@/components/DraggableMindmap'; // Import new component
+import { mockDraggableNodes } from '@/data/draggableMindmapData'; // Import mock data
 
 const StatCard = ({ title, value, change, icon: Icon }: { title: string; value: string; change: string; icon: React.ElementType }) => (
   <Card>
@@ -51,6 +53,16 @@ const ReportsPage = () => {
       </div>
 
       <ResolutionChart data={chartData} />
+
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Mindmap Interativo (Arrastável)</CardTitle>
+          <p className="text-muted-foreground pt-1">Visualização de nós de fluxo de trabalho com capacidade de arrastar e mover (pan).</p>
+        </CardHeader>
+        <CardContent>
+          <DraggableMindmap nodes={mockDraggableNodes} />
+        </CardContent>
+      </Card>
 
       <Card className="w-full">
         <CardHeader>
