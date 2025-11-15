@@ -7,7 +7,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command"
-import { BrainCircuit, Calendar, ListTodo, PlusCircle, BookOpen, Download, Upload } from "lucide-react"
+import { BrainCircuit, Calendar, ListTodo, PlusCircle, BookOpen, Download } from "lucide-react"
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -17,10 +17,9 @@ interface AICommandBarProps {
   onTriggerAddTask?: (initialTitle?: string, initialDescription?: string) => void;
   onTriggerAddKnowledge?: (initialTitle?: string, initialContent?: string, initialCategory?: string) => void;
   onTriggerExportFlow?: () => void;
-  onTriggerImportFlow?: () => void;
 }
 
-export function AICommandBar({ open, onOpenChange, onTriggerAddTask, onTriggerAddKnowledge, onTriggerExportFlow, onTriggerImportFlow }: AICommandBarProps) {
+export function AICommandBar({ open, onOpenChange, onTriggerAddTask, onTriggerAddKnowledge, onTriggerExportFlow }: AICommandBarProps) {
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
@@ -46,8 +45,6 @@ export function AICommandBar({ open, onOpenChange, onTriggerAddTask, onTriggerAd
         toast.info("A abrir formulário de novo artigo...");
       } else if (command.toLowerCase().includes("exportar fluxo")) {
         onTriggerExportFlow?.();
-      } else if (command.toLowerCase().includes("importar fluxo")) {
-        onTriggerImportFlow?.();
       } else {
         toast.info(`Comando "${command}" recebido. (Funcionalidade em desenvolvimento)`);
       }
@@ -84,13 +81,17 @@ export function AICommandBar({ open, onOpenChange, onTriggerAddTask, onTriggerAd
             <BrainCircuit className="mr-2 h-4 w-4" />
             <span>Adicionar à Base de Conhecimento</span>
           </CommandItem>
+          <CommandItem onSelect={() => handleCommand("Criar Tarefa")}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            <span>Criar Tarefa</span>
+          </CommandItem>
+          <CommandItem onSelect={() => handleCommand("Adicionar Conhecimento")}>
+            <BookOpen className="mr-2 h-4 w-4" />
+            <span>Adicionar Conhecimento</span>
+          </CommandItem>
           <CommandItem onSelect={() => handleCommand("Exportar fluxo de trabalho")}>
             <Download className="mr-2 h-4 w-4" />
             <span>Exportar Fluxo de Trabalho</span>
-          </CommandItem>
-          <CommandItem onSelect={() => handleCommand("Importar fluxo de trabalho")}>
-            <Upload className="mr-2 h-4 w-4" />
-            <span>Importar Fluxo de Trabalho</span>
           </CommandItem>
         </CommandGroup>
       </CommandList>
