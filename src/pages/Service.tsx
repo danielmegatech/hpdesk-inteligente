@@ -104,7 +104,8 @@ const ServicePage = () => {
         if (nextNode.id !== 'end_success' && nextNode.id !== 'end_escalar_tecnico') {
           const relevantArticles = apiGetArticles().filter(article => 
             nextNode.question.toLowerCase().includes(article.category.toLowerCase()) ||
-            article.content.toLowerCase().includes(nextNode.question.toLowerCase())
+            article.content.toLowerCase().includes(nextNode.question.toLowerCase()) ||
+            article.title.toLowerCase().includes(nextNode.question.toLowerCase())
           ).slice(0, 3); // Limit to 3 suggestions
           setKbSuggestions(relevantArticles);
         } else {
@@ -126,6 +127,7 @@ const ServicePage = () => {
   };
 
   const handleSaveNewTask = async (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => {
+    if (!user) return;
     const newTask = await apiAddTask(data, currentUserId);
     if (newTask) {
       toast.success(`Tarefa "${data.title}" criada com sucesso!`);

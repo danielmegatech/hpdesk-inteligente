@@ -22,6 +22,7 @@ export const categories = [
   { id: 'atendimento_professor', name: 'Atendimento a Professores', icon: Book, startNodeId: 'professor_start' },
   { id: 'atendimento_staff', name: 'Atendimento a Staff', icon: Briefcase, startNodeId: 'staff_start' },
   { id: 'software_academico', name: 'Software Académico', icon: School, startNodeId: 'software_academico_start' },
+  { id: 'fluxos_atendimento', name: 'Fluxos de Atendimento', icon: LayoutDashboard, startNodeId: 'fluxos_atendimento_start' }, // Nova categoria
   { id: 'others', name: 'Outros', icon: MoreHorizontal, startNodeId: 'others_start' },
 ];
 
@@ -426,6 +427,141 @@ export const mindmapData: Record<string, MindmapNode> = {
     ],
   },
   
+  // --- New: Fluxos de Atendimento Category ---
+  'fluxos_atendimento_start': {
+    id: 'fluxos_atendimento_start',
+    question: 'Qual fluxo de atendimento você precisa?',
+    options: [
+      { text: 'Aluno não acede à aula', nextNodeId: 'flow_aluno_nao_aula' },
+      { text: 'Esqueceu/Expirou Password', nextNodeId: 'flow_password_reset_start' },
+      { text: 'Problemas Login Wi-Fi', nextNodeId: 'flow_wifi_login_problema' },
+      { text: 'Problemas Login Email', nextNodeId: 'flow_email_login_problema' },
+      { text: 'Problemas ServiceNow', nextNodeId: 'flow_servicenow_problema' },
+      { text: 'Problemas HyFlex', nextNodeId: 'flow_hyflex_problema' },
+      { text: 'Plataforma Exam.net', nextNodeId: 'flow_examnet_problema' },
+      { text: 'MFA Ativado (Alunos)', nextNodeId: 'flow_mfa_aluno' },
+      { text: 'Erro 500 Calendário Canvas (Mac)', nextNodeId: 'flow_erro500_canvas_mac' },
+      { text: 'Outro Fluxo', nextNodeId: 'end_ticket' },
+    ],
+  },
+  'flow_aluno_nao_aula': {
+    id: 'flow_aluno_nao_aula',
+    question: 'Aluno não consegue aceder à aula?',
+    options: [
+      { text: 'Verificar Teams/Canvas', nextNodeId: 'end_instruct_teams_canvas_aula' },
+      { text: 'Professor não adicionou aluno', nextNodeId: 'end_encaminhar_professor_gestor' },
+    ],
+  },
+  'flow_password_reset_start': {
+    id: 'flow_password_reset_start',
+    question: 'A palavra-passe é do email institucional, portal académico ou outro serviço?',
+    options: [
+      { text: 'Email/Portal Académico/Staff', nextNodeId: 'password_reset_portal_flow' },
+      { text: 'Conta bloqueada por tentativas', nextNodeId: 'end_instruct_pwm_desbloquear' },
+      { text: 'Outro serviço', nextNodeId: 'end_ticket_reset_senha_geral' },
+    ],
+  },
+  'password_reset_portal_flow': {
+    id: 'password_reset_portal_flow',
+    question: 'Instrua o utilizador a aceder a password.europeia.pt e seguir os passos de recuperação.',
+    options: [
+      { text: 'Problema Persiste', nextNodeId: 'end_ticket_reset_senha_manual' },
+      { text: 'Resolvido', nextNodeId: 'end_success' },
+    ],
+  },
+  'flow_wifi_login_problema': {
+    id: 'flow_wifi_login_problema',
+    question: 'Qual o perfil do utilizador com problema de Wi-Fi?',
+    options: [
+      { text: 'Aluno (UE-Students)', nextNodeId: 'wifi_aluno_flow' },
+      { text: 'Docente (UE-Faculty)', nextNodeId: 'wifi_docente_flow' },
+      { text: 'Staff (UE-Employees)', nextNodeId: 'wifi_staff_flow' },
+      { text: 'Convidado (UE-Events)', nextNodeId: 'wifi_convidado_flow' },
+      { text: 'Outro', nextNodeId: 'end_ticket_config_wifi' },
+    ],
+  },
+  'wifi_aluno_flow': {
+    id: 'wifi_aluno_flow',
+    question: 'Instrua o aluno a conectar à rede UE-Students com credenciais Canvas. Verificar grupo "wifi alunos" no domínio se necessário.',
+    options: [
+      { text: 'Problema Persiste', nextNodeId: 'end_ticket_config_wifi' },
+      { text: 'Resolvido', nextNodeId: 'end_success' },
+    ],
+  },
+  'wifi_docente_flow': {
+    id: 'wifi_docente_flow',
+    question: 'Instrua o docente a conectar à rede UE-Faculty com credenciais Canvas.',
+    options: [
+      { text: 'Problema Persiste', nextNodeId: 'end_ticket_config_wifi' },
+      { text: 'Resolvido', nextNodeId: 'end_success' },
+    ],
+  },
+  'wifi_staff_flow': {
+    id: 'wifi_staff_flow',
+    question: 'Instrua o staff a conectar à rede UE-Employees com credenciais do computador.',
+    options: [
+      { text: 'Problema Persiste', nextNodeId: 'end_ticket_config_wifi' },
+      { text: 'Resolvido', nextNodeId: 'end_success' },
+    ],
+  },
+  'wifi_convidado_flow': {
+    id: 'wifi_convidado_flow',
+    question: 'Instrua o convidado a conectar à rede UE-Events com a palavra-passe: UE-PT-Ev3.2025.',
+    options: [
+      { text: 'Problema Persiste', nextNodeId: 'end_ticket_config_wifi' },
+      { text: 'Resolvido', nextNodeId: 'end_success' },
+    ],
+  },
+  'flow_email_login_problema': {
+    id: 'flow_email_login_problema',
+    question: 'Problemas para entrar no email?',
+    options: [
+      { text: 'Verificar 112/PWM/Canvas', nextNodeId: 'end_instruct_email_check' },
+      { text: 'Aluno novo (24h integração)', nextNodeId: 'end_encaminhar_servicos_academicos' },
+    ],
+  },
+  'flow_servicenow_problema': {
+    id: 'flow_servicenow_problema',
+    question: 'Problemas para entrar no ServiceNow?',
+    options: [
+      { text: 'Verificar erro/link/PWM', nextNodeId: 'end_instruct_servicenow_check' },
+      { text: 'Dispositivo diferente (reset SSO)', nextNodeId: 'end_ticket_servicenow_sso_reset' },
+    ],
+  },
+  'flow_hyflex_problema': {
+    id: 'flow_hyflex_problema',
+    question: 'Qual o problema com HyFlex?',
+    options: [
+      { text: 'Assistência geral', nextNodeId: 'end_instruct_hyflex_rececao_it' },
+      { text: 'SmartMirror', nextNodeId: 'end_instruct_hyflex_smartmirror' },
+    ],
+  },
+  'flow_examnet_problema': {
+    id: 'flow_examnet_problema',
+    question: 'Qual o problema com a plataforma Exam.net?',
+    options: [
+      { text: 'Tela preta/Reiniciar', nextNodeId: 'end_instruct_examnet_restart' },
+      { text: 'Código para sair', nextNodeId: 'end_instruct_examnet_quit_code' },
+      { text: 'Quadrado cinzento', nextNodeId: 'end_instruct_examnet_grey_square' },
+      { text: 'Outro', nextNodeId: 'end_ticket_examnet' },
+    ],
+  },
+  'flow_mfa_aluno': {
+    id: 'flow_mfa_aluno',
+    question: 'Aluno com MFA ativado?',
+    options: [
+      { text: 'Criar ticket ServiceNow para remoção/redefinição', nextNodeId: 'end_ticket_mfa_aluno' },
+    ],
+  },
+  'flow_erro500_canvas_mac': {
+    id: 'flow_erro500_canvas_mac',
+    question: 'Erro 500 ao carregar calendário de aulas Canvas utilizando um Mac (Safari)?',
+    options: [
+      { text: 'Instruir a desativar rastreamento de cookies no Safari', nextNodeId: 'end_instruct_safari_cookies' },
+      { text: 'Sugerir Chrome/Firefox', nextNodeId: 'end_instruct_browser_alternativo' },
+    ],
+  },
+
   // --- Others Flow ---
   'others_start': { id: 'others_start', question: 'Por favor, descreva o problema.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
 
@@ -489,6 +625,23 @@ export const mindmapData: Record<string, MindmapNode> = {
   'end_ticket_software_spss': { id: 'end_ticket_software_spss', question: 'Pedido de suporte criado para problema com IBM SPSS.', options: [] },
   'end_ticket_software_adobe': { id: 'end_ticket_software_adobe', question: 'Pedido de suporte criado para problema com Adobe Creative Cloud.', options: [] },
   'end_ticket_software_academico_geral': { id: 'end_ticket_software_academico_geral', question: 'Pedido de suporte criado para problema com software académico específico.', options: [] },
+  // Novos nós de fim para fluxos de atendimento
+  'end_instruct_teams_canvas_aula': { id: 'end_instruct_teams_canvas_aula', question: 'Instruir a verificar Teams e Canvas. Se não resolver, encaminhar para professor/gestor académico.', options: [{ text: 'Problema Persiste, Encaminhar', nextNodeId: 'end_encaminhar_professor_gestor' }] },
+  'end_encaminhar_professor_gestor': { id: 'end_encaminhar_professor_gestor', question: 'Encaminhar para professor ou gestor académico.', options: [] },
+  'end_instruct_pwm_desbloquear': { id: 'end_instruct_pwm_desbloquear', question: 'Instruir a desbloquear a conta via PWM Admin.', options: [{ text: 'Resolvido', nextNodeId: 'end_success' }] },
+  'end_instruct_email_check': { id: 'end_instruct_email_check', question: 'Instruir a verificar 112, PWM e Canvas para bloqueios de email.', options: [{ text: 'Problema Persiste, Encaminhar', nextNodeId: 'end_encaminhar_servicos_academicos' }] },
+  'end_encaminhar_servicos_academicos': { id: 'end_encaminhar_servicos_academicos', question: 'Encaminhar para Serviços Académicos (aluno novo ou integração).', options: [] },
+  'end_instruct_servicenow_check': { id: 'end_instruct_servicenow_check', question: 'Instruir a verificar erro, link correto e PWM para ServiceNow.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_ticket_servicenow_sso_reset': { id: 'end_ticket_servicenow_sso_reset', question: 'Pedido de suporte criado para reset de SSO no ServiceNow (dispositivo diferente).', options: [] },
+  'end_instruct_hyflex_rececao_it': { id: 'end_instruct_hyflex_rececao_it', question: 'Instruir a contactar a receção ou linha de atendimento IT para assistência HyFlex.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_instruct_hyflex_smartmirror': { id: 'end_instruct_hyflex_smartmirror', question: 'Instruir sobre o uso do SmartMirror no HyFlex (Home/Android, app SmartMirror, smartmirror.link).', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_instruct_examnet_restart': { id: 'end_instruct_examnet_restart', question: 'Instruir a reiniciar o PC e reinstalar o SafeBrowser para Exam.net (tela preta).', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_instruct_examnet_quit_code': { id: 'end_instruct_examnet_quit_code', question: 'Fornecer código para sair do Exam.net: EXAMnetQUIT2017.', options: [{ text: 'Resolvido', nextNodeId: 'end_success' }] },
+  'end_instruct_examnet_grey_square': { id: 'end_instruct_examnet_grey_square', question: 'Informar que o quadrado cinzento no Exam.net não é um problema.', options: [{ text: 'Resolvido', nextNodeId: 'end_success' }] },
+  'end_ticket_examnet': { id: 'end_ticket_examnet', question: 'Pedido de suporte criado para problema na plataforma Exam.net.', options: [] },
+  'end_ticket_mfa_aluno': { id: 'end_ticket_mfa_aluno', question: 'Ticket ServiceNow criado para remoção/redefinição de MFA de aluno.', options: [] },
+  'end_instruct_safari_cookies': { id: 'end_instruct_safari_cookies', question: 'Instruir a desativar "Impedir rastreamento entre sites" em Safari > Preferências > Privacidade.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
+  'end_instruct_browser_alternativo': { id: 'end_instruct_browser_alternativo', question: 'Sugerir o uso de Google Chrome ou Mozilla Firefox para resolver o erro 500 no Canvas (Mac).', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
   // New end nodes for direct actions
   'action_create_task': { id: 'action_create_task', question: 'Criar uma nova tarefa?', options: [] },
   'action_add_knowledge': { id: 'action_add_knowledge', question: 'Adicionar conhecimento à Base de Conhecimento?', options: [] },

@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import ArticleForm, { Article } from '@/components/ArticleForm'; // Import ArticleForm and Article type
 import { apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle } from '@/api'; // Import mock API
 
-const categories = ['Hardware', 'Software', 'Rede', 'Sistemas Internos', 'Segurança', 'Outros', 'Atendimento Aluno', 'Atendimento Professor', 'Atendimento Staff', 'Software Académico'];
+const categories = ['Hardware', 'Software', 'Rede e Wi-Fi', 'Sistemas Operacionais', 'Segurança e Acessos', 'Periféricos e Impressoras', 'Sistemas Académicos (Canvas, Exam.net)', 'Atendimento Aluno', 'Atendimento Professor', 'Atendimento Staff', 'Infraestrutura e Servidores', 'Procedimentos e Checklists', 'Modelos de Resposta', 'Contactos e Informações', 'Fluxos de Atendimento', 'Informações Gerais', 'Aplicações'];
 
 const KnowledgeBasePage = () => {
   const [articles, setArticles] = useState<Article[]>([]);

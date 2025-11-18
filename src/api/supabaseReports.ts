@@ -12,7 +12,7 @@ export const apiGetReportMetrics = async () => {
   const tasksConcludedToday = 5;
   const openTasks = 23;
   const escalatedTasks = 4;
-  const articlesAddedThisMonth = apiGetArticles().length;
+  const articlesAddedThisMonth = apiGetArticles().length; // Now correctly imported
   const trashedTasksCount = 7; // Mocked
   const avgResolutionTimeMinutes = 45; // Mocked
 
