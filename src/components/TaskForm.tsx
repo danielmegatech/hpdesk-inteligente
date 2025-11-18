@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Re-define schema and types here for self-containment, or import from TasksPage if preferred
-const taskStatusSchema = z.enum(['novo', 'emAndamento', 'pendenteAutorizacaoEscalado', 'concluido', 'lixeira']);
+const taskStatusSchema = z.enum(['pendente', 'emProgresso', 'revisao', 'concluido', 'lixeira']);
 const taskHistorySchema = z.object({
   status: taskStatusSchema,
   timestamp: z.date(),
@@ -28,6 +28,8 @@ const taskSchema = z.object({
   time: z.string().optional(),
   priority: z.string().optional(),
   status: taskStatusSchema,
+  hoursSpent: z.number().optional(), // New field
+  estimatedHours: z.number().optional(), // New field
   history: z.array(taskHistorySchema),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -44,7 +46,7 @@ interface TaskFormProps {
 const TaskForm = ({ task, onSave, onOpenChange }: TaskFormProps) => {
   const form = useForm<Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>>({
     resolver: zodResolver(taskSchema.omit({ id: true, history: true, createdAt: true, updatedAt: true, completedAt: true })),
-    defaultValues: task ? { ...task } : { title: '', description: '', status: 'novo', location: '', time: '', priority: 'Média' },
+    defaultValues: task ? { ...task } : { title: '', description: '', status: 'pendente', location: '', time: '', priority: 'Média', hoursSpent: 0, estimatedHours: 0 },
   });
   const onSubmit = (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => { onSave(data); onOpenChange(false); form.reset(); };
   return (
@@ -67,6 +69,10 @@ const TaskForm = ({ task, onSave, onOpenChange }: TaskFormProps) => {
             <FormMessage />
           </FormItem>
         )} />
+      </div>
+      <div className="flex gap-4">
+        <FormField control={form.control} name="hoursSpent" render={({ field }) => (<FormItem className="flex-1"><FormLabel>Horas Gastas</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} /></FormControl><FormMessage /></FormItem>)} />
+        <FormField control={form.control} name="estimatedHours" render={({ field }) => (<FormItem className="flex-1"><FormLabel>Horas Estimadas</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} /></FormControl><FormMessage /></FormItem>)} />
       </div>
       <div className="flex gap-4">
         <FormField control={form.control} name="deadline" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Data do Prazo</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover></FormItem>)} />

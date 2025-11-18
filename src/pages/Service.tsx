@@ -260,7 +260,7 @@ const ServicePage = () => {
         <DialogContent>
           <DialogHeader><DialogTitle>Criar Nova Tarefa</DialogTitle></DialogHeader>
           <TaskForm 
-            task={initialTaskTitle ? { title: initialTaskTitle, description: '', status: 'novo', location: '', time: '' } : undefined} 
+            task={initialTaskTitle ? { title: initialTaskTitle, description: '', status: 'pendente', location: '', time: '' } : undefined} 
             onSave={handleSaveNewTask} 
             onOpenChange={setIsAddTaskOpen} 
           />

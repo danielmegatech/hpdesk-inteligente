@@ -20,18 +20,18 @@ import { useSession } from '@/components/SessionContextProvider'; // Import useS
 
 // --- TYPES AND SCHEMA ---
 const taskStatusMap = {
-  novo: 'Novo',
-  emAndamento: 'Em Andamento',
-  pendenteAutorizacaoEscalado: 'Pendente/Escalado',
-  concluido: 'Concluído',
+  pendente: 'Pendentes',
+  emProgresso: 'Em Progresso',
+  revisao: 'Revisão',
+  concluido: 'Concluídas',
   lixeira: 'Lixeira',
 };
 type TaskStatus = keyof typeof taskStatusMap;
 
 const statusColorMap: Record<TaskStatus, string> = {
-  novo: 'border-blue-500',
-  emAndamento: 'border-yellow-500',
-  pendenteAutorizacaoEscalado: 'border-orange-500',
+  pendente: 'border-blue-500',
+  emProgresso: 'border-yellow-500',
+  revisao: 'border-orange-500',
   concluido: 'border-green-500',
   lixeira: 'border-red-500',
 };
@@ -94,7 +94,12 @@ const TaskCard = ({ task, onEdit, onDelete, onShowHistory, onRestore, onPermanen
         </div>
         <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
         {task.location && (<p className="text-xs text-muted-foreground flex items-center">Local: {task.location}</p>)}
-        {task.deadline && (<p className="text-xs text-muted-foreground flex items-center"><CalendarIcon className="mr-1.5 h-3 w-3" />Prazo: {format(task.deadline, 'dd/MM/yyyy')} {task.time && `às ${task.time}`}</p>)}
+        {(task.hoursSpent !== undefined || task.estimatedHours !== undefined) && (
+          <p className="text-xs text-muted-foreground flex items-center">
+            {task.hoursSpent ?? 0}h / {task.estimatedHours ?? 0}h
+          </p>
+        )}
+        {task.deadline && (<p className="text-xs text-muted-foreground flex items-center"><CalendarIcon className="mr-1.5 h-3 w-3" />DO {format(task.deadline, 'dd/MM/yyyy')} {task.time && `às ${task.time}`}</p>)}
       </CardContent></Card>
     </div>
   );

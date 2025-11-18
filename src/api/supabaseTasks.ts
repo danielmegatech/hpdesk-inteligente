@@ -12,6 +12,8 @@ const mapSupabaseTaskToAppTask = (supabaseTask: any): Task => ({
   time: supabaseTask.time || '',
   status: supabaseTask.status,
   priority: supabaseTask.priority || 'Média',
+  hoursSpent: supabaseTask.hours_spent || 0, // Map new field
+  estimatedHours: supabaseTask.estimated_hours || 0, // Map new field
   createdAt: new Date(supabaseTask.created_at),
   updatedAt: new Date(supabaseTask.updated_at),
   completedAt: supabaseTask.completed_at ? new Date(supabaseTask.completed_at) : undefined,
@@ -67,6 +69,8 @@ export const apiAddTask = async (newTaskData: Omit<Task, 'id' | 'history' | 'cre
       time: newTaskData.time,
       status: newTaskData.status,
       priority: newTaskData.priority,
+      hours_spent: newTaskData.hoursSpent, // New field
+      estimated_hours: newTaskData.estimatedHours, // New field
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       user_id: userId, // Set user ID
@@ -93,6 +97,8 @@ export const apiUpdateTask = async (updatedTaskData: Task): Promise<Task | null>
       time: updatedTaskData.time,
       status: updatedTaskData.status,
       priority: updatedTaskData.priority,
+      hours_spent: updatedTaskData.hoursSpent, // New field
+      estimated_hours: updatedTaskData.estimatedHours, // New field
       updated_at: new Date().toISOString(),
       completed_at: updatedTaskData.status === 'concluido' ? new Date().toISOString() : null,
       deleted_at: updatedTaskData.status === 'lixeira' ? new Date().toISOString() : null, // Set deleted_at if moving to trash
@@ -128,7 +134,7 @@ export const apiRestoreTask = async (taskId: string): Promise<void> => {
   const { error } = await supabase
     .from('tasks')
     .update({
-      status: 'novo', // Or previous status if stored
+      status: 'pendente', // Or previous status if stored
       deleted_at: null,
       updated_at: new Date().toISOString(),
     })
