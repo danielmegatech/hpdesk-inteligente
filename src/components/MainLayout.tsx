@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Home, ListTodo, BarChart3, BrainCircuit, Settings as SettingsIcon, Menu, Bot, LogOut, User } from 'lucide-react';
+import { Home, ListTodo, BarChart3, BrainCircuit, Settings as SettingsIcon, Menu, Bot, LogOut, User, LayoutDashboard } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { MadeWithDyad } from './made-with-dyad';
@@ -24,6 +24,7 @@ const navItems = [
   { to: '/tasks', label: 'Tarefas', icon: ListTodo },
   { to: '/reports', label: 'Relatórios', icon: BarChart3 },
   { to: '/kb', label: 'Base de Conhecimento', icon: BrainCircuit },
+  { to: '/flows', label: 'Fluxos', icon: LayoutDashboard },
   { to: '/settings', label: 'Ajustes', icon: SettingsIcon },
 ];
 

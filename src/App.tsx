@@ -13,6 +13,7 @@ import SettingsPage from "./pages/Settings";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { SessionContextProvider } from "./components/SessionContextProvider"; // Import SessionContextProvider
 import Login from "./pages/Login"; // Import Login page
+import FlowsPage from "./pages/Flows";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
                 <Route path="/tasks" element={<TasksPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/kb" element={<KnowledgeBasePage />} />
+                <Route path="/flows" element={<FlowsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
               <Route path="/login" element={<Login />} /> {/* Keep login page accessible if needed */}
