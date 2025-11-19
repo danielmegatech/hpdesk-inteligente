@@ -22,7 +22,7 @@ export const categories = [
   { id: 'atendimento_professor', name: 'Atendimento a Professores', icon: Book, startNodeId: 'professor_start' },
   { id: 'atendimento_staff', name: 'Atendimento a Staff', icon: Briefcase, startNodeId: 'staff_start' },
   { id: 'software_academico', name: 'Software Académico', icon: School, startNodeId: 'software_academico_start' },
-  { id: 'fluxos_atendimento', name: 'Fluxos de Atendimento', icon: LayoutDashboard, startNodeId: 'fluxos_atendimento_start' }, // Nova categoria
+  { id: 'fluxos_atendimento', name: 'Fluxos de Atendimento', icon: LayoutDashboard, startNodeId: 'fluxos_atendimento_start' },
   { id: 'others', name: 'Outros', icon: MoreHorizontal, startNodeId: 'others_start' },
 ];
 
@@ -93,15 +93,6 @@ export const mindmapData: Record<string, MindmapNode> = {
     options: [
       { text: 'Sim', nextNodeId: 'end_instruct_trocar_toner' },
       { text: 'Não', nextNodeId: 'end_ticket_solicitar_toner' },
-    ],
-  },
-  'barulhos_bipes_start': {
-    id: 'barulhos_bipes_start',
-    question: 'Qual o padrão de bipes ou tipo de ruído?',
-    options: [
-      { text: 'Bipes contínuos/longos', nextNodeId: 'end_ticket_problema_memoria' },
-      { text: 'Ruído de HD/ventoinha', nextNodeId: 'end_ticket_diagnostico_hardware' },
-      { text: 'Outro', nextNodeId: 'end_ticket_diagnostico_hardware' },
     ],
   },
   'hardware_outros': { id: 'hardware_outros', question: 'Por favor, descreva o problema de hardware.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
@@ -316,7 +307,7 @@ export const mindmapData: Record<string, MindmapNode> = {
     question: 'É necessário criar uma nova palavra-passe manualmente?',
     options: [
       { text: 'Sim', nextNodeId: 'end_ticket_reset_senha_manual' },
-      { text: 'Não', nextNodeId: 'end_ticket_reset_senha_portal' }, // Re-attempt portal guidance
+      { text: 'Não', nextNodeId: 'end_instruct_reset_senha_portal' }, // Re-attempt portal guidance
     ],
   },
   'aluno_propinas_start': {
@@ -409,7 +400,7 @@ export const mindmapData: Record<string, MindmapNode> = {
     question: 'É necessário criar uma nova palavra-passe manualmente?',
     options: [
       { text: 'Sim', nextNodeId: 'end_ticket_reset_senha_manual' },
-      { text: 'Não', nextNodeId: 'end_ticket_reset_senha_portal' }, // Re-attempt portal guidance
+      { text: 'Não', nextNodeId: 'end_instruct_reset_senha_portal' }, // Re-attempt portal guidance
     ],
   },
   'staff_outros': { id: 'staff_outros', question: 'Por favor, descreva o problema do staff.', options: [{ text: 'Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
@@ -427,7 +418,7 @@ export const mindmapData: Record<string, MindmapNode> = {
     ],
   },
   
-  // --- New: Fluxos de Atendimento Category ---
+  // --- Fluxos de Atendimento Category ---
   'fluxos_atendimento_start': {
     id: 'fluxos_atendimento_start',
     question: 'Qual fluxo de atendimento você precisa?',
@@ -642,7 +633,4 @@ export const mindmapData: Record<string, MindmapNode> = {
   'end_ticket_mfa_aluno': { id: 'end_ticket_mfa_aluno', question: 'Ticket ServiceNow criado para remoção/redefinição de MFA de aluno.', options: [] },
   'end_instruct_safari_cookies': { id: 'end_instruct_safari_cookies', question: 'Instruir a desativar "Impedir rastreamento entre sites" em Safari > Preferências > Privacidade.', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
   'end_instruct_browser_alternativo': { id: 'end_instruct_browser_alternativo', question: 'Sugerir o uso de Google Chrome ou Mozilla Firefox para resolver o erro 500 no Canvas (Mac).', options: [{ text: 'Problema Persiste, Criar Pedido de Suporte', nextNodeId: 'end_ticket' }] },
-  // New end nodes for direct actions
-  'action_create_task': { id: 'action_create_task', question: 'Criar uma nova tarefa?', options: [] },
-  'action_add_knowledge': { id: 'action_add_knowledge', question: 'Adicionar conhecimento à Base de Conhecimento?', options: [] },
 };
