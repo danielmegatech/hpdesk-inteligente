@@ -1,4 +1,4 @@
-import { Task } from '@/components/TaskForm';
+import { Task, TaskStatus } from '@/components/TaskForm';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
@@ -10,13 +10,14 @@ const mapSupabaseTaskToAppTask = (supabaseTask: any): Task => ({
   deadline: supabaseTask.deadline ? new Date(supabaseTask.deadline) : undefined,
   location: supabaseTask.location || '',
   time: supabaseTask.time || '',
-  status: supabaseTask.status,
+  status: supabaseTask.status as TaskStatus, // Cast to TaskStatus
   priority: supabaseTask.priority || 'Média',
-  hoursSpent: supabaseTask.hours_spent || 0, // Map new field
-  estimatedHours: supabaseTask.estimated_hours || 0, // Map new field
+  hoursSpent: supabaseTask.hours_spent || 0,
+  estimatedHours: supabaseTask.estimated_hours || 0,
   createdAt: new Date(supabaseTask.created_at),
   updatedAt: new Date(supabaseTask.updated_at),
   completedAt: supabaseTask.completed_at ? new Date(supabaseTask.completed_at) : undefined,
+  assignee: supabaseTask.assignee || 'Não Atribuído', // Map new field
   history: [], // History will be managed separately or derived if needed for full audit
 });
 
@@ -69,8 +70,9 @@ export const apiAddTask = async (newTaskData: Omit<Task, 'id' | 'history' | 'cre
       time: newTaskData.time,
       status: newTaskData.status,
       priority: newTaskData.priority,
-      hours_spent: newTaskData.hoursSpent, // New field
-      estimated_hours: newTaskData.estimatedHours, // New field
+      hours_spent: newTaskData.hoursSpent,
+      estimated_hours: newTaskData.estimatedHours,
+      assignee: newTaskData.assignee, // New field
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       user_id: userId, // Set user ID
@@ -97,8 +99,9 @@ export const apiUpdateTask = async (updatedTaskData: Task): Promise<Task | null>
       time: updatedTaskData.time,
       status: updatedTaskData.status,
       priority: updatedTaskData.priority,
-      hours_spent: updatedTaskData.hoursSpent, // New field
-      estimated_hours: updatedTaskData.estimatedHours, // New field
+      hours_spent: updatedTaskData.hoursSpent,
+      estimated_hours: updatedTaskData.estimatedHours,
+      assignee: updatedTaskData.assignee, // New field
       updated_at: new Date().toISOString(),
       completed_at: updatedTaskData.status === 'concluido' ? new Date().toISOString() : null,
       deleted_at: updatedTaskData.status === 'lixeira' ? new Date().toISOString() : null, // Set deleted_at if moving to trash

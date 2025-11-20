@@ -14,7 +14,9 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Re-define schema and types here for self-containment, or import from TasksPage if preferred
-const taskStatusSchema = z.enum(['pendente', 'emProgresso', 'revisao', 'concluido', 'lixeira']);
+export const taskStatusSchema = z.enum(['pendente', 'a_fazer', 'emProgresso', 'revisao', 'concluido', 'lixeira']);
+export type TaskStatus = z.infer<typeof taskStatusSchema>;
+
 const taskHistorySchema = z.object({
   status: taskStatusSchema,
   timestamp: z.date(),
@@ -26,16 +28,17 @@ const taskSchema = z.object({
   deadline: z.date().optional(),
   location: z.string().optional(),
   time: z.string().optional(),
-  priority: z.string().optional(),
+  priority: z.enum(['Baixa', 'Média', 'Alta']).default('Média'), // Changed to literal union
   status: taskStatusSchema,
-  hoursSpent: z.number().optional(), // New field
-  estimatedHours: z.number().optional(), // New field
+  hoursSpent: z.number().optional(),
+  estimatedHours: z.number().optional(),
   history: z.array(taskHistorySchema),
   createdAt: z.date(),
   updatedAt: z.date(),
   completedAt: z.date().optional(),
+  assignee: z.string().optional(), // New field
 });
-export type Task = z.infer<typeof taskSchema>; // Export Task type if needed elsewhere
+export type Task = z.infer<typeof taskSchema>;
 
 interface TaskFormProps {
   task?: Omit<Task, 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>;
@@ -46,7 +49,7 @@ interface TaskFormProps {
 const TaskForm = ({ task, onSave, onOpenChange }: TaskFormProps) => {
   const form = useForm<Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>>({
     resolver: zodResolver(taskSchema.omit({ id: true, history: true, createdAt: true, updatedAt: true, completedAt: true })),
-    defaultValues: task ? { ...task } : { title: '', description: '', status: 'pendente', location: '', time: '', priority: 'Média', hoursSpent: 0, estimatedHours: 0 },
+    defaultValues: task ? { ...task } : { title: '', description: '', status: 'pendente', location: '', time: '', priority: 'Média', hoursSpent: 0, estimatedHours: 0, assignee: 'Não Atribuído' },
   });
   const onSubmit = (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => { onSave(data); onOpenChange(false); form.reset(); };
   return (
@@ -78,6 +81,7 @@ const TaskForm = ({ task, onSave, onOpenChange }: TaskFormProps) => {
         <FormField control={form.control} name="deadline" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Data do Prazo</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP', { locale: ptBR }) : <span>Escolha uma data</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover></FormItem>)} />
         <FormField control={form.control} name="time" render={({ field }) => (<FormItem><FormLabel>Hora do Prazo</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>)} />
       </div>
+      <FormField control={form.control} name="assignee" render={({ field }) => (<FormItem><FormLabel>Responsável</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
       <Button type="submit">Salvar Tarefa</Button>
     </form></Form>
   );

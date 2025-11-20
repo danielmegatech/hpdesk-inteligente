@@ -4,20 +4,22 @@ import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask } from '@/api';
 import { useSession } from '@/components/SessionContextProvider';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import TaskForm, { Task } from '@/components/TaskForm';
+import TaskForm, { Task, TaskStatus } from '@/components/TaskForm';
 import { toast } from 'sonner';
 import { PlusCircle } from 'lucide-react';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import TaskColumn from '@/components/TaskColumn';
-import { TaskStatus } from '@/components/TaskForm';
 
 const statusMap: Record<TaskStatus, string> = {
-  nao_iniciado: 'Não Iniciado',
-  em_progresso: 'Em Progresso',
+  pendente: 'Inbox',
+  a_fazer: 'A Fazer',
+  emProgresso: 'Em Progresso',
+  revisao: 'Revisão', // Keeping for completeness, though not in Trello example
   concluido: 'Concluído',
+  lixeira: 'Lixeira', // Not a visible column
 };
 
-const statusOrder: TaskStatus[] = ['nao_iniciado', 'em_progresso', 'concluido'];
+const visibleStatusOrder: TaskStatus[] = ['pendente', 'a_fazer', 'emProgresso', 'concluido'];
 
 const TasksPage = () => {
   const { user } = useSession();
@@ -32,13 +34,16 @@ const TasksPage = () => {
   });
 
   const { mutate: addTask } = useMutation({
-    mutationFn: (newTask: Omit<Task, 'id'>) => apiAddTask(newTask, user!.id),
+    mutationFn: (newTask: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => apiAddTask(newTask, user!.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       toast.success('Tarefa criada com sucesso!');
       setIsModalOpen(false);
     },
-    onError: () => toast.error('Falha ao criar tarefa.'),
+    onError: (error) => {
+      console.error("Error adding task:", error);
+      toast.error('Falha ao criar tarefa.');
+    },
   });
 
   const { mutate: updateTask } = useMutation({
@@ -49,19 +54,25 @@ const TasksPage = () => {
       setIsModalOpen(false);
       setSelectedTask(undefined);
     },
-    onError: () => toast.error('Falha ao atualizar tarefa.'),
+    onError: (error) => {
+      console.error("Error updating task:", error);
+      toast.error('Falha ao atualizar tarefa.');
+    },
   });
 
   const { mutate: deleteTask } = useMutation({
     mutationFn: (taskId: string) => apiDeleteTask(taskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast.success('Tarefa excluída com sucesso!');
+      toast.success('Tarefa movida para a lixeira!');
     },
-    onError: () => toast.error('Falha ao excluir tarefa.'),
+    onError: (error) => {
+      console.error("Error deleting task:", error);
+      toast.error('Falha ao mover tarefa para a lixeira.');
+    },
   });
 
-  const handleSaveTask = (taskData: Omit<Task, 'id'> | Task) => {
+  const handleSaveTask = (taskData: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'> | Task) => {
     if ('id' in taskData) {
       updateTask(taskData);
     } else {
@@ -76,9 +87,12 @@ const TasksPage = () => {
 
   const tasksByStatus = useMemo(() => {
     const grouped: Record<TaskStatus, Task[]> = {
-      nao_iniciado: [],
-      em_progresso: [],
+      pendente: [],
+      a_fazer: [],
+      emProgresso: [],
+      revisao: [],
       concluido: [],
+      lixeira: [],
     };
     tasks.forEach(task => {
       if (grouped[task.status]) {
@@ -101,7 +115,11 @@ const TasksPage = () => {
   };
 
   if (isLoading) {
-    return <div>Carregando tarefas...</div>;
+    return <div className="p-4 text-center">Carregando tarefas...</div>;
+  }
+
+  if (!user) {
+    return <div className="p-4 text-center text-muted-foreground">Por favor, faça login para ver suas tarefas.</div>;
   }
 
   return (
@@ -118,8 +136,8 @@ const TasksPage = () => {
       </div>
 
       <DndContext onDragEnd={handleDragEnd}>
-        <div className="flex flex-col md:flex-row gap-6 w-full overflow-x-auto pb-4">
-          {statusOrder.map(status => (
+        <div className="flex flex-row gap-6 w-full overflow-x-auto pb-4">
+          {visibleStatusOrder.map(status => (
             <TaskColumn
               key={status}
               id={status}

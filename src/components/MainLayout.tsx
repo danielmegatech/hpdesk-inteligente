@@ -7,17 +7,17 @@ import { AICommandBar } from './AICommandBar';
 import { useState, useEffect } from 'react';
 import { useSettings } from '@/hooks/use-settings';
 import { toast } from 'sonner';
-import { Task } from '@/components/TaskForm'; // Import Task type
-import { formatDistanceToNow } from 'date-fns'; // Import formatDistanceToNow
-import { ptBR } from 'date-fns/locale'; // Import ptBR locale
-import NotificationBell from './NotificationBell'; // Import NotificationBell
-import { apiGetTasks, apiAddNotification, apiAddTask, apiAddArticle } from '@/api'; // Import mock API e as funções em falta
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Importando componentes Dialog
-import TaskForm from '@/components/TaskForm'; // Importando TaskForm
-import ArticleForm from '@/components/ArticleForm'; // Importando ArticleForm
+import { Task } from '@/components/TaskForm';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import NotificationBell from './NotificationBell';
+import { apiGetTasks, apiAddNotification, apiAddTask, apiAddArticle } from '@/api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import TaskForm from '@/components/TaskForm';
+import ArticleForm from '@/components/ArticleForm';
 import { mindmapData } from '@/data/mindmap';
-import { useSession } from './SessionContextProvider'; // Import useSession
-import { supabase } from '@/integrations/supabase/client'; // Import supabase client
+import { useSession } from './SessionContextProvider';
+import { supabase } from '@/integrations/supabase/client';
 
 const navItems = [
   { to: '/', label: 'Atendimento', icon: Home },
@@ -54,8 +54,6 @@ const MainLayout = () => {
   const [isAddKnowledgeOpenFromAI, setIsAddKnowledgeOpenFromAI] = useState(false);
   const [initialArticleDataFromAI, setInitialArticleDataFromAI] = useState<{ title?: string; content?: string; category?: string } | undefined>(undefined);
 
-  // We no longer return null if !user, allowing direct access.
-  // However, we need a placeholder user ID for API calls if not logged in.
   const currentUserId = user?.id || 'anonymous_user_id';
   const userEmail = user?.email || 'Convidado';
 
@@ -91,7 +89,7 @@ const MainLayout = () => {
   };
 
   useEffect(() => {
-    if (currentUserId === 'anonymous_user_id') return; // Skip notifications for anonymous access
+    if (currentUserId === 'anonymous_user_id') return;
 
     const checkWorkHoursAndTasks = async () => {
       const now = new Date();
@@ -105,7 +103,6 @@ const MainLayout = () => {
       const endTime = new Date();
       endTime.setHours(endHour, endMinute, 0, 0);
 
-      // Welcome notification
       if (now >= startTime && now <= endTime) {
         const lastShown = localStorage.getItem('welcome-notification-date');
         if (lastShown !== today) {
@@ -114,19 +111,18 @@ const MainLayout = () => {
         }
       }
 
-      // Task deadline notifications (using Supabase API)
-      const allTasks = await apiGetTasks(currentUserId); // Use currentUserId
+      const allTasks = await apiGetTasks(currentUserId);
       allTasks.forEach(task => {
         if (task.deadline && task.status !== 'concluido' && task.status !== 'lixeira') {
           const diff = task.deadline.getTime() - now.getTime();
-          const oneDay = 86400000; // milliseconds in a day
+          const oneDay = 86400000;
 
           if (diff > 0 && diff <= oneDay && !localStorage.getItem(`deadline-notified-${task.id}-${today}`)) {
             apiAddNotification({ 
               message: `Prazo a aproximar: "${task.title}"`, 
               description: `Vence em ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.`, 
               type: 'warning',
-              link: `/tasks?highlight=${task.id}` // Link to tasks page, highlight specific task
+              link: `/tasks?highlight=${task.id}`
             });
             localStorage.setItem(`deadline-notified-${task.id}-${today}`, 'true');
           } else if (diff <= 0 && !localStorage.getItem(`overdue-notified-${task.id}-${today}`)) {
@@ -134,7 +130,7 @@ const MainLayout = () => {
               message: `Tarefa atrasada: "${task.title}"`, 
               description: `Venceu ${formatDistanceToNow(task.deadline, { addSuffix: true, locale: ptBR })}.`, 
               type: 'error',
-              link: `/tasks?highlight=${task.id}` // Link to tasks page, highlight specific task
+              link: `/tasks?highlight=${task.id}`
             });
             localStorage.setItem(`overdue-notified-${task.id}-${today}`, 'true');
           }
@@ -142,9 +138,8 @@ const MainLayout = () => {
       });
     };
 
-    // Run once on mount and then every hour
     checkWorkHoursAndTasks();
-    const intervalId = setInterval(checkWorkHoursAndTasks, 3600000); // Check every hour
+    const intervalId = setInterval(checkWorkHoursAndTasks, 3600000);
 
     return () => clearInterval(intervalId);
   }, [settings, currentUserId]);
@@ -188,7 +183,7 @@ const MainLayout = () => {
               </SheetContent>
             </Sheet>
             <div className="w-full flex-1 flex justify-end items-center gap-4">
-              <NotificationBell /> {/* Notification Bell */}
+              <NotificationBell />
               <Button variant="outline" size="sm" className="gap-1.5 text-sm" onClick={() => setCommandBarOpen(true)}><Bot className="h-4 w-4" />Assistente IA</Button>
             </div>
           </header>
@@ -196,15 +191,20 @@ const MainLayout = () => {
         </div>
       </div>
 
-      {/* Modals for Add Task and Add Knowledge triggered by AI Command Bar */}
       <Dialog open={isAddTaskOpenFromAI} onOpenChange={setIsAddTaskOpenFromAI}>
         <DialogContent>
           <DialogHeader><DialogTitle>Criar Nova Tarefa (via Assistente IA)</DialogTitle></DialogHeader>
           <TaskForm 
-            task={initialTaskDataFromAI} 
-            onSave={async (data) => { // Made async
-              await apiAddTask(data, currentUserId); // Pass currentUserId
+            task={initialTaskDataFromAI ? { ...initialTaskDataFromAI, status: 'pendente', priority: 'Média', assignee: user?.email || 'Não Atribuído' } : undefined} 
+            onSave={async (data) => {
+              await apiAddTask(data, currentUserId);
               toast.success(`Tarefa "${data.title}" criada com sucesso!`);
+              apiAddNotification({
+                message: `Nova tarefa no Inbox: "${data.title}"`,
+                description: `Criada pelo assistente IA.`,
+                type: 'info',
+                link: '/tasks'
+              });
               setIsAddTaskOpenFromAI(false);
               setInitialTaskDataFromAI(undefined);
             }} 
@@ -218,8 +218,8 @@ const MainLayout = () => {
           <DialogHeader><DialogTitle>Adicionar Novo Artigo (via Assistente IA)</DialogTitle></DialogHeader>
           <ArticleForm 
             article={initialArticleDataFromAI} 
-            onSave={async (data) => { // Made async
-              await apiAddArticle(data); // Await the API call
+            onSave={async (data) => {
+              await apiAddArticle(data);
               toast.success(`Artigo "${data.title}" adicionado à Base de Conhecimento!`);
               setIsAddKnowledgeOpenFromAI(false);
               setInitialArticleDataFromAI(undefined);
