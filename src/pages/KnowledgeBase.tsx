@@ -3,12 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Edit, MoreVertical, PlusCircle, Trash2, BookOpen } from 'lucide-react';
+import { Edit, MoreVertical, PlusCircle, Trash2, BookOpen, Lightbulb } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import ArticleForm, { Article } from '@/components/ArticleForm'; // Import ArticleForm and Article type
 import { apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle } from '@/api'; // Import mock API
+import { cn } from '@/lib/utils';
 
-const categories = ['Hardware', 'Software', 'Rede e Wi-Fi', 'Sistemas Operacionais', 'Segurança e Acessos', 'Periféricos e Impressoras', 'Sistemas Académicos (Canvas, Exam.net)', 'Atendimento Aluno', 'Atendimento Professor', 'Atendimento Staff', 'Infraestrutura e Servidores', 'Procedimentos e Checklists', 'Modelos de Resposta', 'Contactos e Informações', 'Fluxos de Atendimento', 'Informações Gerais', 'Aplicações'];
+const categories = ['Hardware', 'Software', 'Rede e Wi-Fi', 'Sistemas Operacionais', 'Segurança e Acessos', 'Periféricos e Impressoras', 'Sistemas Académicos (Canvas, Exam.net)', 'Atendimento Aluno', 'Atendimento Professor', 'Atendimento Staff', 'Infraestrutura e Servidores', 'Procedimentos e Checklists', 'Modelos de Resposta', 'Contactos e Informações', 'Fluxos de Atendimento', 'Informações Gerais', 'Aplicações', 'Diretivas'];
 
 const KnowledgeBasePage = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -69,15 +70,23 @@ const KnowledgeBasePage = () => {
         {categories.map(category => (
           <Card key={category} className="p-4">
             <CardHeader className="p-0 pb-4">
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <BookOpen className="h-6 w-6 text-primary" /> {category}
+              <CardTitle className={cn("flex items-center gap-2 text-2xl", {
+                "text-red-600 dark:text-red-400": category === 'Diretivas'
+              })}>
+                {category === 'Diretivas' ? <Lightbulb className="h-6 w-6" /> : <BookOpen className="h-6 w-6 text-primary" />} 
+                {category}
               </CardTitle>
             </CardHeader>
             <Separator className="mb-4" />
             <CardContent className="p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {articlesByCategory[category] && articlesByCategory[category].length > 0 ? (
                 articlesByCategory[category].map(article => (
-                  <Card key={article.id} className="flex flex-col group">
+                  <Card 
+                    key={article.id} 
+                    className={cn("flex flex-col group", {
+                      "border-2 border-red-500 shadow-lg bg-red-500/10": category === 'Diretivas'
+                    })}
+                  >
                     <CardHeader className="flex-row items-center justify-between">
                       <CardTitle className="text-lg">{article.title}</CardTitle>
                       <DropdownMenu>

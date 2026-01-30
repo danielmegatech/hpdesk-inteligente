@@ -23,11 +23,11 @@ import { BlogPost } from './BlogPostCard'; // Importar BlogPost type para tipage
 const navItems = [
   { to: '/', label: 'Atendimento', icon: Home },
   { to: '/tasks', label: 'Tarefas', icon: ListTodo },
-  { to: '/reports', label: 'Relatórios', icon: BarChart3 },
+  { to: '/reports', label: 'Dashboard', icon: BarChart3 }, // Renamed
   { to: '/kb', label: 'Base de Conhecimento', icon: BrainCircuit },
   { to: '/flows', label: 'Visualizar Fluxos', icon: LayoutDashboard },
-  { to: '/flow-management', label: 'Gerenciar Fluxos', icon: GitBranch }, // Novo item
-  { to: '/blog', label: 'Blog', icon: Rss }, // Novo item
+  // Removed { to: '/flow-management', label: 'Gerenciar Fluxos', icon: GitBranch },
+  { to: '/blog', label: 'Blog', icon: Rss },
   { to: '/settings', label: 'Ajustes', icon: SettingsIcon },
 ];
 
@@ -115,7 +115,7 @@ const MainLayout = () => {
       if (now >= startTime && now <= endTime) {
         const lastShown = localStorage.getItem('welcome-notification-date');
         if (lastShown !== today) {
-          apiAddNotification({ message: 'Bem-vindo ao seu turno!', description: 'Tenha um ótimo dia de trabalho.', type: 'info' });
+          apiAddNotification({ message: 'Bem-vindo ao seu turno!', description: `Seu horário: ${settings.workStartTime} - ${settings.workEndTime}.`, type: 'info' });
           localStorage.setItem('welcome-notification-date', today);
         }
       }

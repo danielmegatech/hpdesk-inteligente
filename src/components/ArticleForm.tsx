@@ -16,7 +16,7 @@ const articleSchema = z.object({
 });
 export type Article = z.infer<typeof articleSchema>; // Export Article type if needed elsewhere
 
-const categories = ['Hardware', 'Software', 'Rede e Wi-Fi', 'Sistemas Operacionais', 'Segurança e Acessos', 'Periféricos e Impressoras', 'Sistemas Académicos (Canvas, Exam.net)', 'Atendimento Aluno', 'Atendimento Professor', 'Atendimento Staff', 'Infraestrutura e Servidores', 'Procedimentos e Checklists', 'Modelos de Resposta', 'Contactos e Informações', 'Fluxos de Atendimento', 'Informações Gerais', 'Aplicações'];
+const categories = ['Hardware', 'Software', 'Rede e Wi-Fi', 'Sistemas Operacionais', 'Segurança e Acessos', 'Periféricos e Impressoras', 'Sistemas Académicos (Canvas, Exam.net)', 'Atendimento Aluno', 'Atendimento Professor', 'Atendimento Staff', 'Infraestrutura e Servidores', 'Procedimentos e Checklists', 'Modelos de Resposta', 'Contactos e Informações', 'Fluxos de Atendimento', 'Informações Gerais', 'Aplicações', 'Diretivas'];
 
 interface ArticleFormProps {
   article?: Article;

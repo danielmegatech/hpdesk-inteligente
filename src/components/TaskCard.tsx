@@ -41,7 +41,7 @@ const TaskCard = ({ task, onEdit, onDelete }: TaskCardProps) => {
   const style = {
     transform: CSS.Translate.toString(transform),
     opacity: isDragging ? 0.7 : 1,
-    zIndex: isDragging ? 100 : 'auto',
+    zIndex: isDragging ? 1000 : 'auto', // Increased zIndex
     boxShadow: isDragging ? '0 4px 12px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.08)',
   };
 

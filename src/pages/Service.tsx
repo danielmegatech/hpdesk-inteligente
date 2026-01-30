@@ -3,17 +3,26 @@ import { Button } from '@/components/ui/button';
 import MindmapFlow from '@/components/MindmapFlow';
 import MindmapHistory from '@/components/MindmapHistory';
 import { mindmapData, categories, MindmapNode } from '@/data/mindmap';
-import { PlayCircle, PlusCircle, BookOpen } from 'lucide-react';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PlayCircle, PlusCircle, BookOpen, Search, ArrowRight } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import TaskForm, { Task } from '@/components/TaskForm';
 import ArticleForm, { Article } from '@/components/ArticleForm';
 import { toast } from 'sonner';
 import ActiveServiceCard from '@/components/ActiveServiceCard';
 import { apiAddTask, apiAddArticle, apiGetArticles, apiAddNotification } from '@/api';
 import { useSession } from '@/components/SessionContextProvider';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 type ServiceState = 'idle' | 'selecting_category' | 'in_flow';
+
+const getCategorySubthemes = (startNodeId: string) => {
+  const startNode = mindmapData[startNodeId];
+  if (!startNode) return 'Nenhum subtema definido.'; 
+  
+  return startNode.options.map(opt => opt.text).join(', ');
+};
 
 const ServicePage = () => {
   const { user } = useSession();
@@ -32,6 +41,7 @@ const ServicePage = () => {
   const [initialTaskTitle, setInitialTaskTitle] = useState<string | undefined>(undefined);
   const [initialTaskDescription, setInitialTaskDescription] = useState<string | undefined>(undefined); // New state for description
   const [initialArticleTitle, setInitialArticleTitle] = useState<string | undefined>(undefined);
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
 
 
   const handleStartService = () => {
@@ -56,6 +66,7 @@ const ServicePage = () => {
     setInitialTaskTitle(undefined);
     setInitialTaskDescription(undefined);
     setInitialArticleTitle(undefined);
+    setIsSearchDialogOpen(false); // Close dialog if opened via search
   };
   
   const handleReset = () => {
@@ -152,16 +163,6 @@ const ServicePage = () => {
     setInitialArticleTitle(undefined);
   };
 
-  const getCategorySubthemes = (categoryId: string) => {
-    const startNodeId = categories.find(cat => cat.id === categoryId)?.startNodeId;
-    if (!startNodeId) return '';
-    const startNode = mindmapData[startNodeId];
-    
-    if (!startNode) return 'Nenhum subtema definido.'; 
-    
-    return startNode.options.map(opt => opt.text).join(', ');
-  };
-
   const handleOpenAddTask = () => {
     if (currentNodeId) {
       const currentQuestion = mindmapData[currentNodeId].question;
@@ -193,6 +194,46 @@ const ServicePage = () => {
                 <PlayCircle className="mr-2 h-6 w-6" />
                 Iniciar Atendimento
               </Button>
+              <Dialog open={isSearchDialogOpen} onOpenChange={setIsSearchDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg">
+                    <Search className="mr-2 h-6 w-6" />
+                    Buscar Atendimento
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>Buscar Tema de Atendimento</DialogTitle>
+                  </DialogHeader>
+                  <ScrollArea className="h-[400px] pr-4">
+                    <div className="space-y-4">
+                      {categories.map((cat) => (
+                        <Card 
+                          key={cat.id} 
+                          className="p-4 hover:bg-accent/50 transition-colors cursor-pointer"
+                          onClick={() => handleCategorySelect(cat.startNodeId)}
+                        >
+                          <CardHeader className="p-0 pb-2">
+                            <CardTitle className="text-lg flex items-center gap-2">
+                              <cat.icon className="h-5 w-5 text-primary" />
+                              {cat.name}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0 text-sm text-muted-foreground flex items-center">
+                            <ArrowRight className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <span className="line-clamp-2">
+                              {getCategorySubthemes(cat.startNodeId)}
+                            </span>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                  <DialogFooter>
+                    <Button variant="secondary" onClick={() => setIsSearchDialogOpen(false)}>Fechar</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         );
@@ -206,7 +247,7 @@ const ServicePage = () => {
                   key={cat.id} 
                   className="flex flex-col items-center justify-center p-6 hover:bg-accent hover:shadow-lg transition-all cursor-pointer"
                   onClick={() => handleCategorySelect(cat.startNodeId)}
-                  title={getCategorySubthemes(cat.id)}
+                  title={getCategorySubthemes(cat.startNodeId)}
                 >
                   <cat.icon className="h-10 w-10 mb-3 text-primary" />
                   <CardHeader className="p-0">

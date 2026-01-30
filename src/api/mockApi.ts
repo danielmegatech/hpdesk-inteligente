@@ -1,6 +1,6 @@
 import { Article } from '@/components/ArticleForm';
 import { BlogPost } from '@/components/BlogPostCard'; // Import BlogPost type
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 
 // --- Mock Data Storage (using localStorage for persistence) ---
 const getArticles = (): Article[] => {
@@ -138,8 +138,35 @@ const initializeArticles = () => {
       { id: 'kb-43', title: 'Fluxo Atendimento - AutoCAD', content: 'Ver no site da Autodesk, pois é um software terceiro onde os alunos registram como estudante para obter a licença estudante.', category: 'Fluxos de Atendimento' },
       { id: 'kb-44', title: 'Informações Permanentes', content: 'Primeira utilização de impressora: autenticação manual 2x, cartão 3a vez. Wi-Fi Docentes: rede Faculty, acesso Canvas. Wi-Fi Roteador Vodafone: UNIVERSIDADE_EUROPEIA, pass: Europeia2025. Wi-Fi UE-EVENTS: UE-Ev3.2025. IP servidor impressão: 172.26.2.12. CMD forçar domínio: gpupdate /force.', category: 'Informações Gerais' },
       { id: 'kb-45', title: 'Plataforma Exam.net - Provas Online', content: 'Para provas dos alunos do ensino online. Devem instalar a aplicação SafeBrowser da comunidade Respondus. Conteúdo disponível no email enviado pela admissions@universidadeeuropeia.pt ou admissions@iade.pt. Validação e dúvidas uma semana antes via Teams. No dia da prova, aluno abre Teams no telemóvel para dúvidas, realiza prova no computador enquanto fiscal monitora na reunião Teams no telemóvel. Monitorar validação e prova na data marcada e responder alunos via chat usando Teams (Email: suporte.helpdesk.portugal@universidadeeuropeia.pt, Password: Kaq35571).', category: 'Sistemas Académicos (Canvas, Exam.net)' },
+      // Diretivas
+      { id: 'kb-46', title: 'DIRETIVA: Uso de Palavras-passe Fortes', content: 'Todas as palavras-passe devem ter no mínimo 12 caracteres, incluindo letras maiúsculas, minúsculas, números e símbolos. A alteração deve ser feita a cada 90 dias.', category: 'Diretivas' },
+      { id: 'kb-47', title: 'DIRETIVA: Procedimento de Backup Diário', content: 'O backup dos servidores críticos deve ser verificado diariamente às 09:00. Em caso de falha, escalar imediatamente para o Administrador de Sistemas.', category: 'Diretivas' },
+      { id: 'kb-48', title: 'DIRETIVA: Instalação de Software Não Autorizado', content: 'É estritamente proibida a instalação de software não autorizado em equipamentos da universidade. Qualquer exceção deve ser aprovada pelo Gestor de TI.', category: 'Diretivas' },
     ];
     saveArticles(articles);
+  }
+};
+
+// Function to generate sample content based on the type
+const generateSampleContent = (type: string): string => {
+  switch (type) {
+    case 'directive':
+      return `Esta é uma diretiva importante sobre ${
+        Math.random() > 0.5 ? 'segurança' : 'acesso'
+      }. Leia com atenção.`;
+    case 'event':
+      return `Temos um evento especial no dia ${format(
+        new Date(),
+        'dd/MM/yyyy'
+      )} sobre ${
+        Math.random() > 0.5 ? 'novas tecnologias' : 'suporte ao cliente'
+      }.`;
+    case 'contact':
+      return `Entre em contato com nossa equipe em ${
+        Math.random() > 0.5 ? 'suporte@empresa.com' : 'atendimento@empresa.com'
+      }.`;
+    default:
+      return `Conteúdo genérico do blog.`;
   }
 };
 
@@ -152,21 +179,49 @@ const initializeBlogPosts = () => {
         title: 'Nova Funcionalidade: Painel Kanban de Tarefas!',
         content: 'Estamos entusiasmados em anunciar o lançamento do nosso novo painel Kanban de tarefas, que permite gerenciar seus tickets de suporte de forma mais visual e eficiente. Arraste e solte tarefas entre as colunas "Inbox", "A Fazer", "Em Progresso" e "Concluído".',
         author: 'Equipa de Desenvolvimento',
-        publishedAt: new Date(Date.now() - 86400000 * 3), // 3 dias atrás
+        publishedAt: subDays(new Date(), 3),
       },
       {
         id: 'blog-2',
         title: 'Atualização da Base de Conhecimento',
         content: 'Adicionamos mais de 20 novos artigos à nossa Base de Conhecimento, cobrindo tópicos como configuração de Wi-Fi para alunos, resolução de problemas de acesso ao Canvas e guias para software académico como AutoCAD e MAXQDA.',
         author: 'Admin',
-        publishedAt: new Date(Date.now() - 86400000 * 7), // 7 dias atrás
+        publishedAt: subDays(new Date(), 7),
       },
       {
         id: 'blog-3',
         title: 'Melhorias na Performance do Sistema',
         content: 'Implementamos otimizações significativas no backend e frontend para garantir uma experiência mais rápida e responsiva em todas as áreas da aplicação.',
         author: 'Equipa de Desenvolvimento',
-        publishedAt: new Date(Date.now() - 86400000 * 14), // 14 dias atrás
+        publishedAt: subDays(new Date(), 14),
+      },
+      {
+        id: 'blog-4',
+        title: 'DIRETIVA: Novo Procedimento de Acesso Remoto',
+        content: generateSampleContent('directive'),
+        author: 'Segurança de TI',
+        publishedAt: subDays(new Date(), 1),
+      },
+      {
+        id: 'blog-5',
+        title: 'Evento: Festa de Fim de Ano do Setor de IT',
+        content: 'Marque na agenda! A festa de fim de ano será no dia 15 de Dezembro. Mais detalhes serão enviados por email.',
+        author: 'RH',
+        publishedAt: subDays(new Date(), 5),
+      },
+      {
+        id: 'blog-6',
+        title: 'Mudança de Contactos: Linha de Apoio',
+        content: 'O número da linha de apoio ao estudante mudou para 21 030 9991. Atualize os seus registos.',
+        author: 'Administração',
+        publishedAt: subDays(new Date(), 2),
+      },
+      {
+        id: 'blog-7',
+        title: 'DIRETIVA: Política de Uso de IA',
+        content: 'Nova política sobre o uso de ferramentas de Inteligência Artificial no ambiente de trabalho. Consulte o documento completo na Base de Conhecimento.',
+        author: 'Gestão',
+        publishedAt: subDays(new Date(), 10),
       },
     ];
     saveBlogPosts(posts);

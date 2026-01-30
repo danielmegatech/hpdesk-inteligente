@@ -58,7 +58,7 @@ const ReportsPage = () => {
   return (
     <div className="flex flex-col items-center justify-start h-full w-full gap-8">
       <div className="text-left w-full">
-        <h1 className="text-3xl font-bold">Métricas e Relatórios</h1>
+        <h1 className="text-3xl font-bold">Dashboard de Métricas</h1>
         <p className="text-muted-foreground">
           Dashboard com métricas de atendimento e relatórios.
         </p>
