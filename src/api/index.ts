@@ -1,6 +1,6 @@
-import { AppNotification, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification, apiGetNotifications } from './mockApi';
-import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetTrashedTasks, apiRestoreTask, apiPermanentDeleteTask } from './supabaseTasks'; // Removido .ts
-import { apiGetReportMetrics, apiGetAuditLog, apiGetResolutionChartData } from './supabaseReports'; // Import from new reports file
+import { AppNotification, apiGetArticles, apiAddArticle, apiUpdateArticle, apiDeleteArticle, apiAddNotification, apiMarkNotificationAsRead, apiDeleteNotification, apiGetNotifications, apiGetBlogPosts, apiAddBlogPost, apiUpdateBlogPost, apiDeleteBlogPost } from './mockApi';
+import { apiGetTasks, apiAddTask, apiUpdateTask, apiDeleteTask, apiGetTrashedTasks, apiRestoreTask, apiPermanentDeleteTask } from './mockTasks';
+import { apiGetReportMetrics, apiGetAuditLog, apiGetResolutionChartData } from './supabaseReports';
 
 export type { AppNotification };
 export { 
@@ -21,5 +21,9 @@ export {
   apiDeleteNotification, 
   apiGetNotifications,
   apiGetAuditLog,
-  apiGetResolutionChartData // Export new chart data API
+  apiGetResolutionChartData,
+  apiGetBlogPosts, // Exportar novas funções de blog
+  apiAddBlogPost,
+  apiUpdateBlogPost,
+  apiDeleteBlogPost
 };

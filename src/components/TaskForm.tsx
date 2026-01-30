@@ -36,22 +36,23 @@ const taskSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   completedAt: z.date().optional(),
+  deletedAt: z.date().optional(), // Adicionado deletedAt
   assignee: z.string().optional(), // New field
 });
 export type Task = z.infer<typeof taskSchema>;
 
 interface TaskFormProps {
-  task?: Omit<Task, 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>;
-  onSave: (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => void;
+  task?: Omit<Task, 'history' | 'createdAt' | 'updatedAt' | 'completedAt' | 'deletedAt'>;
+  onSave: (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt' | 'deletedAt'>) => void;
   onOpenChange: (open: boolean) => void;
 }
 
 const TaskForm = ({ task, onSave, onOpenChange }: TaskFormProps) => {
-  const form = useForm<Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>>({
-    resolver: zodResolver(taskSchema.omit({ id: true, history: true, createdAt: true, updatedAt: true, completedAt: true })),
+  const form = useForm<Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt' | 'deletedAt'>>({
+    resolver: zodResolver(taskSchema.omit({ id: true, history: true, createdAt: true, updatedAt: true, completedAt: true, deletedAt: true })),
     defaultValues: task ? { ...task } : { title: '', description: '', status: 'pendente', location: '', time: '', priority: 'Média', hoursSpent: 0, estimatedHours: 0, assignee: 'Não Atribuído' },
   });
-  const onSubmit = (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt'>) => { onSave(data); onOpenChange(false); form.reset(); };
+  const onSubmit = (data: Omit<Task, 'id' | 'history' | 'createdAt' | 'updatedAt' | 'completedAt' | 'deletedAt'>) => { onSave(data); onOpenChange(false); form.reset(); };
   return (
     <Form {...form}><form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Título</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />

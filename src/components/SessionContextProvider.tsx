@@ -1,7 +1,40 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+// import { supabase } from '@/integrations/supabase/client'; // Removido o import real do supabase
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Definir um utilizador e sessão mock
+const MOCK_USER: User = {
+  id: 'mock-user-id-123',
+  aud: 'authenticated',
+  role: 'authenticated',
+  email: 'tecnico@helpdesk.app',
+  email_confirmed_at: '2023-01-01T00:00:00Z',
+  phone: '',
+  confirmed_at: '2023-01-01T00:00:00Z',
+  last_sign_in_at: '2024-01-01T00:00:00Z',
+  app_metadata: {
+    provider: 'email',
+    providers: ['email'],
+  },
+  user_metadata: {
+    first_name: 'Técnico',
+    last_name: 'Exemplo',
+  },
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
+  is_anonymous: false,
+};
+
+const MOCK_SESSION: Session = {
+  access_token: 'mock-access-token',
+  token_type: 'bearer', // Corrigido para 'bearer' (minúsculas)
+  expires_in: 3600,
+  expires_at: Math.floor(Date.now() / 1000) + 3600,
+  refresh_token: 'mock-refresh-token',
+  user: MOCK_USER,
+};
+
 
 interface SessionContextType {
   session: Session | null;
@@ -29,20 +62,16 @@ export const SessionContextProvider: React.FC<SessionContextProviderProps> = ({ 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Simula o carregamento da sessão
+    const loadMockSession = () => {
+      // Em vez de chamar supabase.auth.onAuthStateChange, definimos a sessão mock diretamente
+      setSession(MOCK_SESSION);
+      setUser(MOCK_USER);
       setIsLoading(false);
-    });
+    };
 
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    loadMockSession();
+    // Não há necessidade de unsubscribe para um mock
   }, []);
 
   const value = { session, user, isLoading };

@@ -1,4 +1,5 @@
 import { Article } from '@/components/ArticleForm';
+import { BlogPost } from '@/components/BlogPostCard'; // Import BlogPost type
 import { format } from 'date-fns';
 
 // --- Mock Data Storage (using localStorage for persistence) ---
@@ -9,6 +10,21 @@ const getArticles = (): Article[] => {
 
 const saveArticles = (articles: Article[]) => {
   localStorage.setItem('mockArticles', JSON.stringify(articles));
+};
+
+const getBlogPosts = (): BlogPost[] => {
+  const storedPosts = localStorage.getItem('mockBlogPosts');
+  if (storedPosts) {
+    return JSON.parse(storedPosts).map((post: any) => ({
+      ...post,
+      publishedAt: new Date(post.publishedAt),
+    }));
+  }
+  return [];
+};
+
+const saveBlogPosts = (posts: BlogPost[]) => {
+  localStorage.setItem('mockBlogPosts', JSON.stringify(posts));
 };
 
 // --- Article API (exported) ---
@@ -38,6 +54,36 @@ export const apiDeleteArticle = (articleId: string) => {
   const currentArticles = getArticles();
   const updatedArticles = currentArticles.filter(a => a.id !== articleId);
   saveArticles(updatedArticles);
+};
+
+// --- Blog Post API (exported) ---
+export const apiGetBlogPosts = (): BlogPost[] => {
+  return getBlogPosts().sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
+};
+
+export const apiAddBlogPost = (newPostData: Omit<BlogPost, 'id' | 'publishedAt'>): BlogPost => {
+  const currentPosts = getBlogPosts();
+  const newPost: BlogPost = {
+    ...newPostData,
+    id: `blog-${Date.now()}`,
+    publishedAt: new Date(),
+  };
+  saveBlogPosts([newPost, ...currentPosts]);
+  return newPost;
+};
+
+export const apiUpdateBlogPost = (updatedPostData: BlogPost) => {
+  const currentPosts = getBlogPosts();
+  const updatedPosts = currentPosts.map(p =>
+    p.id === updatedPostData.id ? { ...updatedPostData, publishedAt: new Date(updatedPostData.publishedAt) } : p
+  );
+  saveBlogPosts(updatedPosts);
+};
+
+export const apiDeleteBlogPost = (postId: string) => {
+  const currentPosts = getBlogPosts();
+  const updatedPosts = currentPosts.filter(p => p.id !== postId);
+  saveBlogPosts(updatedPosts);
 };
 
 
@@ -97,8 +143,40 @@ const initializeArticles = () => {
   }
 };
 
-// Chamar initializeArticles uma vez quando o módulo é carregado
+const initializeBlogPosts = () => {
+  let posts: BlogPost[] = getBlogPosts();
+  if (posts.length === 0) {
+    posts = [
+      {
+        id: 'blog-1',
+        title: 'Nova Funcionalidade: Painel Kanban de Tarefas!',
+        content: 'Estamos entusiasmados em anunciar o lançamento do nosso novo painel Kanban de tarefas, que permite gerenciar seus tickets de suporte de forma mais visual e eficiente. Arraste e solte tarefas entre as colunas "Inbox", "A Fazer", "Em Progresso" e "Concluído".',
+        author: 'Equipa de Desenvolvimento',
+        publishedAt: new Date(Date.now() - 86400000 * 3), // 3 dias atrás
+      },
+      {
+        id: 'blog-2',
+        title: 'Atualização da Base de Conhecimento',
+        content: 'Adicionamos mais de 20 novos artigos à nossa Base de Conhecimento, cobrindo tópicos como configuração de Wi-Fi para alunos, resolução de problemas de acesso ao Canvas e guias para software académico como AutoCAD e MAXQDA.',
+        author: 'Admin',
+        publishedAt: new Date(Date.now() - 86400000 * 7), // 7 dias atrás
+      },
+      {
+        id: 'blog-3',
+        title: 'Melhorias na Performance do Sistema',
+        content: 'Implementamos otimizações significativas no backend e frontend para garantir uma experiência mais rápida e responsiva em todas as áreas da aplicação.',
+        author: 'Equipa de Desenvolvimento',
+        publishedAt: new Date(Date.now() - 86400000 * 14), // 14 dias atrás
+      },
+    ];
+    saveBlogPosts(posts);
+  }
+};
+
+
+// Chamar initializeArticles e initializeBlogPosts uma vez quando o módulo é carregado
 initializeArticles();
+initializeBlogPosts();
 
 // --- Notification API (for floating menu) ---
 export interface AppNotification {

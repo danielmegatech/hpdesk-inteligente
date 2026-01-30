@@ -1,16 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PossibilityTree from '@/components/PossibilityTree';
-import { possibilityTreeData, completedServiceFlowData } from '@/data/reportsData'; // Keep possibilityTreeData, import completedServiceFlowData
-import { formatDistanceToNow, format } from 'date-fns';
+import { possibilityTreeData, completedServiceFlowData } from '@/data/reportsData';
+import { formatDistanceToNow, format, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Clock, User, FileText, Trash2 } from 'lucide-react';
+import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Clock, User, FileText, Trash2, CalendarIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { apiGetReportMetrics, apiGetAuditLog, apiGetResolutionChartData } from '@/api'; // Import chart data API
+import { apiGetReportMetrics, apiGetAuditLog, apiGetResolutionChartData } from '@/api';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import ResolutionChart from '@/components/ResolutionChart'; // Import the new chart component
-import DraggableMindmap from '@/components/DraggableMindmap'; // Import new component
-import { mockDraggableNodes } from '@/data/draggableMindmapData'; // Import mock data
+import ResolutionChart from '@/components/ResolutionChart';
+import DraggableMindmap from '@/components/DraggableMindmap';
+import { mockDraggableNodes } from '@/data/draggableMindmapData';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const StatCard = ({ title, value, change, icon: Icon }: { title: string; value: string; change: string; icon: React.ElementType }) => (
   <Card>
@@ -29,15 +34,26 @@ const ReportsPage = () => {
   const [metrics, setMetrics] = useState<any[]>([]);
   const [auditLog, setAuditLog] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
+    from: subDays(new Date(), 7),
+    to: new Date(),
+  });
+  const [reportType, setReportType] = useState('daily'); // 'daily', 'weekly', 'monthly'
 
   useEffect(() => {
     const loadData = async () => {
       setMetrics(await apiGetReportMetrics());
       setAuditLog(apiGetAuditLog());
-      setChartData(apiGetResolutionChartData());
+      setChartData(apiGetResolutionChartData()); // Esta função já gera dados para 7 dias
     };
     loadData();
   }, []);
+
+  // Lógica para filtrar dados com base no dateRange e reportType (mockada por enquanto)
+  const filteredChartData = chartData.filter(item => {
+    // Implementar lógica de filtragem real aqui se os dados mock fossem mais complexos
+    return true;
+  });
 
   return (
     <div className="flex flex-col items-center justify-start h-full w-full gap-8">
@@ -48,11 +64,61 @@ const ReportsPage = () => {
         </p>
       </div>
       
+      <div className="flex flex-col md:flex-row gap-4 w-full justify-end">
+        <Select value={reportType} onValueChange={setReportType}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Tipo de Relatório" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="daily">Diário</SelectItem>
+            <SelectItem value="weekly">Semanal</SelectItem>
+            <SelectItem value="monthly">Mensal</SelectItem>
+          </SelectContent>
+        </Select>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              id="date"
+              variant={"outline"}
+              className={cn(
+                "w-[300px] justify-start text-left font-normal",
+                !dateRange.from && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateRange.from ? (
+                dateRange.to ? (
+                  <>
+                    {format(dateRange.from, "LLL dd, y", { locale: ptBR })} -{" "}
+                    {format(dateRange.to, "LLL dd, y", { locale: ptBR })}
+                  </>
+                ) : (
+                  format(dateRange.from, "LLL dd, y", { locale: ptBR })
+                )
+              ) : (
+                <span>Selecione uma data</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange.from}
+              selected={dateRange as any}
+              onSelect={setDateRange as any}
+              numberOfMonths={2}
+              locale={ptBR}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full">
         {metrics.map(metric => <StatCard key={metric.title} {...metric} />)}
       </div>
 
-      <ResolutionChart data={chartData} />
+      <ResolutionChart data={filteredChartData} />
 
       <Card className="w-full">
         <CardHeader>

@@ -16,7 +16,7 @@ const Login = () => {
         </CardHeader>
         <CardContent>
           <Auth
-            supabaseClient={supabase}
+            supabaseClient={supabase as any} // Adicionado 'as any' para o cliente mock
             providers={[]}
             appearance={{
               theme: ThemeSupa,

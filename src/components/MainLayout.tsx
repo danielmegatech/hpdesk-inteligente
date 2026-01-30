@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Home, ListTodo, BarChart3, BrainCircuit, Settings as SettingsIcon, Menu, Bot, LogOut, User, LayoutDashboard } from 'lucide-react';
+import { Home, ListTodo, BarChart3, BrainCircuit, Settings as SettingsIcon, Menu, Bot, LogOut, User, LayoutDashboard, Rss, GitBranch } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { MadeWithDyad } from './made-with-dyad';
@@ -11,20 +11,23 @@ import { Task } from '@/components/TaskForm';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import NotificationBell from './NotificationBell';
-import { apiGetTasks, apiAddNotification, apiAddTask, apiAddArticle } from '@/api';
+import { apiGetTasks, apiAddNotification, apiAddTask, apiAddArticle, apiAddBlogPost } from '@/api'; // Adicionado apiAddBlogPost
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import TaskForm from '@/components/TaskForm';
 import ArticleForm from '@/components/ArticleForm';
+import BlogPostForm from './BlogPostForm'; // Importar BlogPostForm
 import { mindmapData } from '@/data/mindmap';
 import { useSession } from './SessionContextProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { BlogPost } from './BlogPostCard'; // Importar BlogPost type para tipagem correta
 
 const navItems = [
   { to: '/', label: 'Atendimento', icon: Home },
   { to: '/tasks', label: 'Tarefas', icon: ListTodo },
   { to: '/reports', label: 'Relatórios', icon: BarChart3 },
   { to: '/kb', label: 'Base de Conhecimento', icon: BrainCircuit },
-  { to: '/flows', label: 'Fluxos', icon: LayoutDashboard },
+  { to: '/flows', label: 'Visualizar Fluxos', icon: LayoutDashboard },
+  { to: '/flow-management', label: 'Gerenciar Fluxos', icon: GitBranch }, // Novo item
+  { to: '/blog', label: 'Blog', icon: Rss }, // Novo item
   { to: '/settings', label: 'Ajustes', icon: SettingsIcon },
 ];
 
@@ -53,17 +56,18 @@ const MainLayout = () => {
   const [initialTaskDataFromAI, setInitialTaskDataFromAI] = useState<{ title?: string; description?: string } | undefined>(undefined);
   const [isAddKnowledgeOpenFromAI, setIsAddKnowledgeOpenFromAI] = useState(false);
   const [initialArticleDataFromAI, setInitialArticleDataFromAI] = useState<{ title?: string; content?: string; category?: string } | undefined>(undefined);
+  const [isAddBlogPostOpenFromAI, setIsAddBlogPostOpenFromAI] = useState(false); // Novo estado para blog post
+  const [initialBlogPostDataFromAI, setInitialBlogPostDataFromAI] = useState<Omit<BlogPost, 'id' | 'publishedAt'> | undefined>(undefined); // Corrigido o tipo para BlogPostForm
 
   const currentUserId = user?.id || 'anonymous_user_id';
   const userEmail = user?.email || 'Convidado';
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error('Erro ao sair: ' + error.message);
-    } else {
-      toast.success('Sessão encerrada com sucesso.');
-    }
+    // Como estamos usando um mock, apenas limpamos a sessão mock
+    // Em um ambiente real, você chamaria supabase.auth.signOut();
+    toast.success('Sessão encerrada com sucesso (mock).');
+    // Para simular o logout, você pode recarregar a página ou redefinir o estado da sessão
+    window.location.reload(); 
   };
 
   const handleTriggerAddTaskFromAI = (title?: string, description?: string) => {
@@ -74,6 +78,11 @@ const MainLayout = () => {
   const handleTriggerAddKnowledgeFromAI = (title?: string, content?: string, category?: string) => {
     setInitialArticleDataFromAI({ title, content, category });
     setIsAddKnowledgeOpenFromAI(true);
+  };
+
+  const handleTriggerAddBlogPostFromAI = (title?: string, content?: string, author?: string) => {
+    setInitialBlogPostDataFromAI({ title, content, author });
+    setIsAddBlogPostOpenFromAI(true);
   };
 
   const handleExportFlow = () => {
@@ -152,6 +161,7 @@ const MainLayout = () => {
         onTriggerAddTask={handleTriggerAddTaskFromAI}
         onTriggerAddKnowledge={handleTriggerAddKnowledgeFromAI}
         onTriggerExportFlow={handleExportFlow}
+        // Adicionar trigger para blog post se a AI Command Bar for expandida para isso
       />
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <div className="hidden border-r bg-muted/40 md:block">
@@ -225,6 +235,22 @@ const MainLayout = () => {
               setInitialArticleDataFromAI(undefined);
             }} 
             onOpenChange={setIsAddKnowledgeOpenFromAI} 
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddBlogPostOpenFromAI} onOpenChange={setIsAddBlogPostOpenFromAI}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Adicionar Novo Post de Blog (via Assistente IA)</DialogTitle></DialogHeader>
+          <BlogPostForm 
+            post={initialBlogPostDataFromAI} 
+            onSave={async (data) => {
+              await apiAddBlogPost(data);
+              toast.success(`Post "${data.title}" adicionado ao Blog!`);
+              setIsAddBlogPostOpenFromAI(false);
+              setInitialBlogPostDataFromAI(undefined);
+            }} 
+            onOpenChange={setIsAddBlogPostOpenFromAI} 
           />
         </DialogContent>
       </Dialog>

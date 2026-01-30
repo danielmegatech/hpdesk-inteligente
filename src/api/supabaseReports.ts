@@ -1,19 +1,27 @@
-import { apiGetTasks, apiGetTrashedTasks } from './supabaseTasks'; // Removido .ts
+import { apiGetTasks, apiGetTrashedTasks } from './mockTasks'; // Agora importado de mockTasks
 import { apiGetArticles } from './mockApi'; // Articles still from mock
+// import { supabase } from '@/integrations/supabase/client'; // Removido o import do supabase
 import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Trash2 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 
 export const apiGetReportMetrics = async () => {
-  // Since we don't have RLS policies on tasks for SELECT TO anonymous, 
-  // we need to ensure this function is called with a user ID or handle the case where it's called without one (e.g., mock data if no user).
-  // For now, we rely on the calling component (ReportsPage) to handle the user context, but the metrics themselves are mostly aggregated.
-  
-  // Mocking task counts for metrics:
-  const tasksConcludedToday = 5;
-  const openTasks = 23;
-  const escalatedTasks = 4;
-  const articlesAddedThisMonth = apiGetArticles().length; // Now correctly imported
-  const trashedTasksCount = 7; // Mocked
+  // Usando as APIs mock de tarefas e artigos
+  const allTasks = await apiGetTasks();
+  const trashedTasks = await apiGetTrashedTasks();
+  const articles = apiGetArticles();
+
+  const tasksConcludedToday = allTasks.filter(task => 
+    task.status === 'concluido' && task.completedAt && 
+    format(task.completedAt, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+  ).length;
+  const openTasks = allTasks.filter(task => task.status !== 'concluido' && task.status !== 'lixeira').length;
+  const escalatedTasks = allTasks.filter(task => task.priority === 'Alta' && task.status !== 'concluido' && task.status !== 'lixeira').length; // Exemplo de escalado
+  const articlesAddedThisMonth = articles.filter(article => {
+    // Assumindo que articles não têm createdAt, ou adicionando um mock para isso
+    // Por enquanto, apenas o total de artigos
+    return true; 
+  }).length;
+  const trashedTasksCount = trashedTasks.length;
   const avgResolutionTimeMinutes = 45; // Mocked
 
   return [
