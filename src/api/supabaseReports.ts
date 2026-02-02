@@ -1,7 +1,7 @@
 import { apiGetTasks, apiGetTrashedTasks } from './mockTasks'; // Agora importado de mockTasks
 import { apiGetArticles } from './mockApi'; // Articles still from mock
 // import { supabase } from '@/integrations/supabase/client'; // Removido o import do supabase
-import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Trash2 } from 'lucide-react';
+import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Trash2, Clock, Shield, Wifi, Server } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 
 export const apiGetReportMetrics = async () => {
@@ -23,14 +23,26 @@ export const apiGetReportMetrics = async () => {
   }).length;
   const trashedTasksCount = trashedTasks.length;
   const avgResolutionTimeMinutes = 45; // Mocked
+  
+  // Novas Métricas
+  const systemDowntimeMinutes = 12; // Mocked
+  const securityIncidents = 3; // Mocked
+  const networkLatencyMs = 15; // Mocked
+  const totalSupportTickets = allTasks.length + 120; // Mocked total
 
   return [
     { title: 'Tickets Resolvidos (Hoje)', value: tasksConcludedToday.toString(), change: '+2', icon: CheckCircle },
     { title: 'Tickets Abertos', value: openTasks.toString(), change: '-1', icon: GitBranch },
     { title: 'Tickets Escalados', value: escalatedTasks.toString(), change: '+1', icon: AlertTriangle },
     { title: 'Artigos KB Adicionados', value: articlesAddedThisMonth.toString(), change: '+2', icon: BookOpen },
-    { title: 'Tempo Médio de Resolução', value: `${avgResolutionTimeMinutes} min`, change: '-5 min', icon: XCircle },
+    { title: 'Tempo Médio de Resolução', value: `${avgResolutionTimeMinutes} min`, change: '-5 min', icon: Clock },
     { title: 'Tarefas na Lixeira', value: trashedTasksCount.toString(), change: '0', icon: Trash2 },
+    
+    // Novas métricas solicitadas
+    { title: 'Tempo de Inatividade (Mês)', value: `${systemDowntimeMinutes} min`, change: '-5 min', icon: Server },
+    { title: 'Incidentes de Segurança (30d)', value: securityIncidents.toString(), change: '0', icon: Shield },
+    { title: 'Desempenho da Rede (Latência)', value: `${networkLatencyMs} ms`, change: '+2 ms', icon: Wifi },
+    { title: 'Total de Tíquetes de Suporte', value: totalSupportTickets.toString(), change: '+10%', icon: GitBranch },
   ];
 };
 

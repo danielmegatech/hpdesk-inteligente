@@ -3,7 +3,7 @@ import PossibilityTree from '@/components/PossibilityTree';
 import { possibilityTreeData, completedServiceFlowData } from '@/data/reportsData';
 import { formatDistanceToNow, format, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Clock, User, FileText, Trash2, CalendarIcon } from 'lucide-react';
+import { CheckCircle, AlertTriangle, BookOpen, GitBranch, XCircle, Clock, User, FileText, Trash2, CalendarIcon, Server, Shield, Wifi } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiGetReportMetrics, apiGetAuditLog, apiGetResolutionChartData } from '@/api';
 import { Separator } from '@/components/ui/separator';
@@ -114,7 +114,7 @@ const ReportsPage = () => {
         </Popover>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 w-full">
         {metrics.map(metric => <StatCard key={metric.title} {...metric} />)}
       </div>
 
