@@ -120,35 +120,7 @@ const ReportsPage = () => {
 
       <ResolutionChart data={filteredChartData} />
 
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Mindmap Interativo (Arrastável)</CardTitle>
-          <p className="text-muted-foreground pt-1">Visualização de nós de fluxo de trabalho com capacidade de arrastar e mover (pan).</p>
-        </CardHeader>
-        <CardContent>
-          <DraggableMindmap nodes={mockDraggableNodes} />
-        </CardContent>
-      </Card>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Árvore de Possibilidades do Atendimento (Exemplo)</CardTitle>
-          <p className="text-muted-foreground pt-1">Análise de um fluxo de atendimento para identificar rotas alternativas.</p>
-        </CardHeader>
-        <CardContent>
-          <PossibilityTree data={possibilityTreeData} />
-        </CardContent>
-      </Card>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Fluxo de Atendimento Concluído (Exemplo)</CardTitle>
-          <p className="text-muted-foreground pt-1">Visualização de um caminho específico percorrido num atendimento já finalizado.</p>
-        </CardHeader>
-        <CardContent>
-          <PossibilityTree data={completedServiceFlowData} />
-        </CardContent>
-      </Card>
+      {/* Removidos: Mindmap Interativo, Árvore de Possibilidades, Fluxo de Atendimento Concluído */}
 
       <Card className="w-full">
         <CardHeader>
