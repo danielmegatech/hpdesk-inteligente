@@ -14,8 +14,8 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import Login from "./pages/Login";
 import FlowsPage from "./pages/Flows";
-import FlowManagementPage from "./pages/FlowManagement"; // Nova importação
-import BlogPage from "./pages/BlogPage"; // Nova importação
+import FlowManagementPage from "./pages/FlowManagement"; 
+import BlogPage from "./pages/BlogPage";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +25,7 @@ const App = () => (
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename="/helpdeskapp/">
           <SessionContextProvider>
             <Routes>
               <Route path="/" element={<MainLayout />}>
@@ -34,8 +34,8 @@ const App = () => (
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/kb" element={<KnowledgeBasePage />} />
                 <Route path="/flows" element={<FlowsPage />} />
-                <Route path="/flow-management" element={<FlowManagementPage />} /> {/* Nova rota */}
-                <Route path="/blog" element={<BlogPage />} /> {/* Nova rota */}
+                <Route path="/flow-management" element={<FlowManagementPage />} />
+                <Route path="/blog" element={<BlogPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
               <Route path="/login" element={<Login />} />
